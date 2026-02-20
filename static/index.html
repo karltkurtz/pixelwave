@@ -20,6 +20,22 @@
 
         * { margin: 0; padding: 0; box-sizing: border-box; }
 
+        #bg-layer {
+            position: fixed;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            background: linear-gradient(-45deg, #0e1117, #0d1f2d, #0e1a0e, #1a0e1a);
+            background-size: 400% 400%;
+            animation: bgShift 20s ease infinite;
+            z-index: -1;
+        }
+
+        @keyframes bgShift {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+
         body {
             color: var(--text);
             font-family: 'Nunito', sans-serif;
@@ -28,15 +44,7 @@
             flex-direction: column;
             align-items: center;
             padding: 24px 16px 48px;
-            background: linear-gradient(-45deg, #0e1117, #0d1f2d, #0e1a0e, #1a0e1a);
-            background-size: 400% 400%;
-            animation: bgShift 20s ease infinite;
-        }
-
-        @keyframes bgShift {
-            0% { background-position: 0% 50%; }
-            50% { background-position: 100% 50%; }
-            100% { background-position: 0% 50%; }
+            background: #0e1117;
         }
 
         .header {
@@ -152,10 +160,8 @@
 
         .stream-container {
             width: 100%;
-            background: var(--surface);
             border-radius: 12px;
             overflow: hidden;
-            animation: fadeUp 0.6s ease 0.2s both;
             position: relative;
             padding: 6px;
             background: linear-gradient(135deg, var(--amber), var(--teal), var(--coral), var(--amber));
@@ -236,6 +242,34 @@
             gap: 12px;
             flex-wrap: wrap;
             animation: fadeUp 0.6s ease 0.35s both;
+        }
+
+        .name-wrap {
+            width: 100%;
+            margin-bottom: 4px;
+        }
+
+        .name-wrap input {
+            width: 100%;
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            padding: 10px 14px;
+            color: var(--text);
+            font-family: 'Nunito', sans-serif;
+            font-size: 13px;
+            font-weight: 600;
+            box-sizing: border-box;
+            outline: none;
+            transition: border-color 0.2s;
+        }
+
+        .name-wrap input:focus {
+            border-color: var(--amber);
+        }
+
+        .name-wrap input::placeholder {
+            color: var(--muted);
         }
 
         .btn {
@@ -360,6 +394,7 @@
     </style>
 </head>
 <body>
+    <div id="bg-layer"></div>
 
     <div class="header">
         <div class="logo">Pixel<span>wave</span></div>
@@ -391,6 +426,7 @@
             </div>
             <div id="timer"></div>
         </div>
+
         <div class="last-session-bar" id="last-session-bar" style="display:none;">
             ✏️ Last drawing: <span id="last-session-time"></span>
         </div>
