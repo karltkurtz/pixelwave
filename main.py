@@ -1,10 +1,11 @@
-from fastapi import FastAPI, WebSocket, WebSocketDisconnect, Header, HTTPException
+from fastapi import FastAPI, WebSocket, WebSocketDisconnect, Header, HTTPException, Request
 from fastapi.responses import HTMLResponse
 from fastapi.staticfiles import StaticFiles
 import asyncio
 import time
 import json
 import os
+import urllib.request
 
 app = FastAPI()
 app.mount("/static", StaticFiles(directory="static"), name="static")
@@ -12,6 +13,7 @@ app.mount("/static", StaticFiles(directory="static"), name="static")
 NUM_LEDS = 180
 BOARD_FILE = "board_state.json"
 SHOUTOUT_FILE = "shoutout.json"
+GUESTBOOK_FILE = "guestbook.json"
 CLAIM_WINDOW = 10
 ADMIN_PASSWORD = "litebrite123"
 
@@ -35,6 +37,16 @@ def save_shoutout():
     with open(SHOUTOUT_FILE, "w") as f:
         json.dump(shoutout, f)
 
+def load_guestbook():
+    if os.path.exists(GUESTBOOK_FILE):
+        with open(GUESTBOOK_FILE) as f:
+            return json.load(f)
+    return []
+
+def save_guestbook():
+    with open(GUESTBOOK_FILE, "w") as f:
+        json.dump(guestbook, f)
+
 board_state = load_board()
 
 session = {
@@ -52,6 +64,8 @@ home_status = {"home": False}
 session_history = []
 
 shoutout = load_shoutout()
+
+guestbook = load_guestbook()
 
 def save_session(duration_seconds, board_snapshot, name):
     session_history.append({
@@ -170,6 +184,48 @@ async def donate():
         "Cache-Control": "no-store, no-cache, must-revalidate",
         "Pragma": "no-cache"
     })
+
+@app.get("/guestbook")
+async def guestbook_page():
+    with open("static/guestbook.html") as f:
+        content = f.read()
+    return HTMLResponse(content, headers={
+        "Cache-Control": "no-store, no-cache, must-revalidate",
+        "Pragma": "no-cache"
+    })
+
+@app.post("/guestbook")
+async def post_guestbook(payload: dict, request: Request):
+    name = payload.get("name", "Anonymous").strip() or "Anonymous"
+    message = payload.get("message", "").strip()
+    if not message:
+        return {"error": "message required"}
+    ip = request.headers.get("x-forwarded-for", request.client.host)
+    location = "Unknown"
+    try:
+        with urllib.request.urlopen(f"http://ip-api.com/json/{ip}?fields=city,regionName,country", timeout=3) as r:
+            geo = json.loads(r.read())
+            if geo.get("city"):
+                location = f"{geo['city']}, {geo['regionName']}, {geo['country']}"
+            elif geo.get("country"):
+                location = geo["country"]
+    except:
+        pass
+    entry = {
+        "name": name,
+        "message": message,
+        "time": time.time(),
+        "location": location
+    }
+    guestbook.insert(0, entry)
+    if len(guestbook) > 100:
+        guestbook.pop()
+    save_guestbook()
+    return {"status": "ok"}
+
+@app.get("/guestbook/entries")
+async def get_guestbook():
+    return guestbook
 
 @app.post("/shoutout")
 async def post_shoutout(payload: dict):

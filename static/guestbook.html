@@ -1,0 +1,349 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Guestbook — The LED Board</title>
+    <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Nunito:wght@400;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg: #0e1117;
+            --surface: #161c27;
+            --amber: #f6ad55;
+            --coral: #fc8181;
+            --teal: #4fd1c5;
+            --green: #68d391;
+            --text: #e2e8f0;
+            --muted: #718096;
+            --border: #2d3748;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        #bg-layer {
+            position: fixed;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            background: linear-gradient(-45deg, #0e1117, #0d1f2d, #0e1a0e, #1a0e1a);
+            background-size: 400% 400%;
+            animation: bgShift 20s ease infinite;
+            z-index: -1;
+        }
+
+        @keyframes bgShift {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+
+        body {
+            color: var(--text);
+            font-family: 'Nunito', sans-serif;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 24px 16px 48px;
+            background: #0e1117;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 32px;
+            animation: fadeDown 0.6s ease both;
+        }
+
+        .logo {
+            font-family: 'Press Start 2P', monospace;
+            font-size: clamp(14px, 3vw, 22px);
+            color: var(--amber);
+            text-shadow: 0 0 20px rgba(246,173,85,0.4);
+            letter-spacing: 2px;
+            margin-bottom: 6px;
+            text-decoration: none;
+            display: block;
+        }
+
+        .logo span { color: var(--teal); }
+
+        .back-link {
+            font-size: 12px;
+            color: var(--muted);
+            text-decoration: none;
+            font-weight: 600;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            margin-top: 8px;
+            transition: color 0.2s;
+        }
+
+        .back-link:hover { color: var(--teal); }
+
+        .page-content {
+            width: 100%;
+            max-width: 560px;
+            display: flex;
+            flex-direction: column;
+            gap: 24px;
+        }
+
+        .card {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            padding: 28px;
+            animation: fadeUp 0.6s ease 0.1s both;
+        }
+
+        .card-title {
+            font-family: 'Press Start 2P', monospace;
+            font-size: 10px;
+            color: var(--amber);
+            letter-spacing: 1px;
+            margin-bottom: 20px;
+            line-height: 1.8;
+        }
+
+        .field-label {
+            font-family: 'Press Start 2P', monospace;
+            font-size: 7px;
+            color: var(--muted);
+            letter-spacing: 1px;
+            display: block;
+            margin-bottom: 8px;
+        }
+
+        .field-wrap {
+            margin-bottom: 16px;
+        }
+
+        input[type="text"], textarea {
+            width: 100%;
+            background: rgba(0,0,0,0.2);
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            padding: 10px 14px;
+            color: var(--text);
+            font-family: 'Nunito', sans-serif;
+            font-size: 14px;
+            font-weight: 600;
+            outline: none;
+            transition: border-color 0.2s;
+            resize: none;
+        }
+
+        input[type="text"]:focus, textarea:focus { border-color: var(--amber); }
+        input[type="text"]::placeholder, textarea::placeholder { color: var(--muted); }
+
+        textarea { height: 100px; }
+
+        .submit-btn {
+            font-family: 'Press Start 2P', monospace;
+            font-size: 8px;
+            padding: 12px 20px;
+            border-radius: 8px;
+            border: none;
+            background: var(--amber);
+            color: #1a1a2e;
+            cursor: pointer;
+            letter-spacing: 0.5px;
+            transition: transform 0.1s, box-shadow 0.1s;
+            width: 100%;
+        }
+
+        .submit-btn:hover { box-shadow: 0 0 16px rgba(246,173,85,0.4); }
+        .submit-btn:active { transform: scale(0.96); }
+
+        .success-msg {
+            display: none;
+            text-align: center;
+            padding: 16px;
+            background: rgba(104,211,145,0.08);
+            border: 1px solid rgba(104,211,145,0.3);
+            border-radius: 10px;
+            font-family: 'Press Start 2P', monospace;
+            font-size: 8px;
+            color: var(--green);
+            line-height: 1.8;
+            margin-top: 12px;
+        }
+
+        .entries-card {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            padding: 28px;
+            animation: fadeUp 0.6s ease 0.2s both;
+        }
+
+        .entries-title {
+            font-family: 'Press Start 2P', monospace;
+            font-size: 10px;
+            color: var(--teal);
+            letter-spacing: 1px;
+            margin-bottom: 20px;
+        }
+
+        .entry {
+            border-bottom: 1px solid var(--border);
+            padding: 14px 0;
+        }
+
+        .entry:last-child { border-bottom: none; }
+
+        .entry-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 6px;
+        }
+
+        .entry-name {
+            font-family: 'Press Start 2P', monospace;
+            font-size: 8px;
+            color: var(--amber);
+            letter-spacing: 0.5px;
+        }
+
+        .entry-time {
+            font-size: 11px;
+            color: var(--muted);
+            font-weight: 600;
+        }
+
+        .entry-message {
+            font-size: 14px;
+            color: var(--text);
+            font-weight: 600;
+            line-height: 1.6;
+        }
+
+        .empty-msg {
+            text-align: center;
+            font-size: 13px;
+            color: var(--muted);
+            font-weight: 600;
+            padding: 20px 0;
+        }
+
+        @keyframes fadeDown {
+            from { opacity: 0; transform: translateY(-16px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        @keyframes fadeUp {
+            from { opacity: 0; transform: translateY(16px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .entry-meta {
+            font-size: 11px;
+            color: var(--muted);
+            font-weight: 600;
+            margin-bottom: 6px;
+        }
+    </style>
+</head>
+<body>
+    <div id="bg-layer"></div>
+
+    <div class="header">
+        <a class="logo" href="/">The LED <span>Board</span></a>
+        <a class="back-link" href="/">← Back to the board</a>
+    </div>
+
+    <div class="page-content">
+
+        <div class="card">
+            <div class="card-title">📖 Sign the Guestbook</div>
+            <div class="field-wrap">
+                <label class="field-label">// YOUR NAME</label>
+                <input type="text" id="gb-name" maxlength="24" placeholder="What's your name? 👋" />
+            </div>
+            <div class="field-wrap">
+                <label class="field-label">// YOUR MESSAGE</label>
+                <textarea id="gb-message" maxlength="280" placeholder="Leave a note for Karl... 💬"></textarea>
+            </div>
+            <button class="submit-btn" onclick="submitEntry()">✏️ SIGN THE GUESTBOOK</button>
+            <div class="success-msg" id="success-msg">
+                YOUR MESSAGE<br>HAS BEEN POSTED! 🎉
+            </div>
+        </div>
+
+        <div class="entries-card">
+            <div class="entries-title">// RECENT VISITORS</div>
+            <div id="entries-list">
+                <div class="empty-msg">No entries yet — be the first! 👋</div>
+            </div>
+        </div>
+
+    </div>
+
+    <script>
+        function formatTime(timestamp) {
+            const date = new Date(timestamp * 1000);
+            const dateStr = date.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+            const timeStr = date.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' });
+            const seconds = Math.floor(Date.now() / 1000 - timestamp);
+            let ago;
+            if (seconds < 60) ago = 'just now';
+            else if (seconds < 3600) ago = `${Math.floor(seconds/60)}m ago`;
+            else if (seconds < 86400) ago = `${Math.floor(seconds/3600)}h ago`;
+            else ago = `${Math.floor(seconds/86400)}d ago`;
+            return `${dateStr} at ${timeStr} (${ago})`;
+        }
+
+        function loadEntries() {
+            fetch('/guestbook/entries')
+                .then(r => r.json())
+                .then(entries => {
+                    const list = document.getElementById('entries-list');
+                    if (!entries || entries.length === 0) {
+                        list.innerHTML = '<div class="empty-msg">No entries yet — be the first! 👋</div>';
+                        return;
+                    }
+                    list.innerHTML = entries.map(e => `
+                        <div class="entry">
+                            <div class="entry-header">
+                                <div class="entry-name">${escapeHtml(e.name)}</div>
+                            </div>
+                            <div class="entry-meta">${formatTime(e.time)}${e.location && e.location !== 'Unknown' ? ' · 📍 ' + escapeHtml(e.location) : ''}</div>
+                            <div class="entry-message">${escapeHtml(e.message)}</div>
+                        </div>
+                    `).join('');
+                });
+        }
+
+        function escapeHtml(str) {
+            return str.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+        }
+
+        function submitEntry() {
+            const name = document.getElementById('gb-name').value.trim() || 'Anonymous';
+            const message = document.getElementById('gb-message').value.trim();
+            if (!message) {
+                alert('Please write a message!');
+                return;
+            }
+            fetch('/guestbook', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ name, message })
+            }).then(r => r.json()).then(data => {
+                if (data.status === 'ok') {
+                    document.getElementById('gb-name').value = '';
+                    document.getElementById('gb-message').value = '';
+                    document.getElementById('success-msg').style.display = 'block';
+                    setTimeout(() => {
+                        document.getElementById('success-msg').style.display = 'none';
+                    }, 3000);
+                    loadEntries();
+                }
+            });
+        }
+
+        loadEntries();
+    </script>
+</body>
+</html>
