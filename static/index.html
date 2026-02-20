@@ -391,6 +391,53 @@
         .last-session-bar span {
             color: var(--teal);
         }
+
+                .action-buttons {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            justify-content: center;
+            margin-bottom: 28px;
+            animation: fadeUp 0.6s ease 0.15s both;
+        }
+
+        .action-btn {
+            font-family: 'Press Start 2P', monospace;
+            font-size: 7px;
+            padding: 10px 14px;
+            border-radius: 8px;
+            text-decoration: none;
+            letter-spacing: 0.5px;
+            transition: transform 0.1s, box-shadow 0.1s;
+            border: 1px solid var(--border);
+        }
+
+        .action-btn:active { transform: scale(0.96); }
+
+        .guestbook-btn {
+            background: rgba(79,209,197,0.1);
+            color: var(--teal);
+            border-color: rgba(79,209,197,0.3);
+        }
+
+        .guestbook-btn:hover { box-shadow: 0 0 12px rgba(79,209,197,0.3); }
+
+        .email-btn {
+            background: rgba(246,173,85,0.1);
+            color: var(--amber);
+            border-color: rgba(246,173,85,0.3);
+        }
+
+        .email-btn:hover { box-shadow: 0 0 12px rgba(246,173,85,0.3); }
+
+        .venmo-btn {
+            background: rgba(104,211,145,0.1);
+            color: var(--green);
+            border-color: rgba(104,211,145,0.3);
+        }
+
+        .venmo-btn:hover { box-shadow: 0 0 12px rgba(104,211,145,0.3); }
+
     </style>
 </head>
 <body>
@@ -407,6 +454,12 @@
     <div class="sticky-note">
         <p>Hey! I've got a real LED board sitting in my house. Draw something on it for me to find when I get home. 👋</p>
         <p class="signature">— Karl</p>
+    </div>
+
+    <div class="action-buttons">
+        <a class="action-btn guestbook-btn" href="/guestbook">📖 Guestbook</a>
+        <a class="action-btn email-btn" href="mailto:karltkurtz@gmail.com">✉️ Email Karl</a>
+        <a class="action-btn venmo-btn" href="/donate">💸 Donate to keep this page alive</a>
     </div>
 
     <div class="content">
