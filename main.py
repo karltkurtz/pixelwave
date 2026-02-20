@@ -143,7 +143,11 @@ async def startup_event():
 @app.get("/")
 async def root():
     with open("static/index.html") as f:
-        return HTMLResponse(f.read())
+        content = f.read()
+    return HTMLResponse(content, headers={
+        "Cache-Control": "no-store, no-cache, must-revalidate",
+        "Pragma": "no-cache"
+    })
 
 @app.post("/admin/home")
 async def set_home(payload: dict):

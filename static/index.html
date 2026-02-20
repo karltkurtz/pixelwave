@@ -21,7 +21,6 @@
         * { margin: 0; padding: 0; box-sizing: border-box; }
 
         body {
-            background: var(--bg);
             color: var(--text);
             font-family: 'Nunito', sans-serif;
             min-height: 100vh;
@@ -29,9 +28,15 @@
             flex-direction: column;
             align-items: center;
             padding: 24px 16px 48px;
-            background-image:
-                radial-gradient(circle at 20% 20%, rgba(246,173,85,0.04) 0%, transparent 50%),
-                radial-gradient(circle at 80% 80%, rgba(79,209,197,0.04) 0%, transparent 50%);
+            background: linear-gradient(-45deg, #0e1117, #0d1f2d, #0e1a0e, #1a0e1a);
+            background-size: 400% 400%;
+            animation: bgShift 20s ease infinite;
+        }
+
+        @keyframes bgShift {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
         }
 
         .header {
@@ -166,17 +171,12 @@
             border-radius: 10px;
             overflow: hidden;
             background: var(--surface);
-            position: relative;
-            padding-bottom: 56.25%; /* 16:9 */
-            height: 0;
         }
 
         .stream-inner img {
-            position: absolute;
-            top: 0;
-            left: 0;
             width: 100%;
-            height: 100%;
+            display: block;
+            aspect-ratio: 16/9;
             object-fit: cover;
         }
 
@@ -379,7 +379,7 @@
         <div class="stream-container">
             <div class="stream-inner">
                 <div class="stream-label">LIVE</div>
-                <img src="http://10.0.0.81:8080/?action=stream" alt="Live Stream"/>
+                <img id="stream-img" alt="Live Stream"/>
             </div>
         </div>
 
@@ -607,6 +607,12 @@
             timeEl.textContent = `by ${artist} on ${dateStr} at ${timeStr} — drew for ${durationStr}`;
             bar.style.display = 'block';
         }
+
+        function reloadStream() {
+            const img = document.getElementById('stream-img');
+            img.src = `http://10.0.0.81:8080/?action=stream&t=${Date.now()}`;
+        }
+        reloadStream();
 
         connectWS();
     </script>
