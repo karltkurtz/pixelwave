@@ -1,0 +1,598 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pixelwave</title>
+    <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Nunito:wght@400;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg: #0e1117;
+            --surface: #161c27;
+            --amber: #f6ad55;
+            --coral: #fc8181;
+            --teal: #4fd1c5;
+            --green: #68d391;
+            --text: #e2e8f0;
+            --muted: #718096;
+            --border: #2d3748;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            background: var(--bg);
+            color: var(--text);
+            font-family: 'Nunito', sans-serif;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 24px 16px 48px;
+            background-image:
+                radial-gradient(circle at 20% 20%, rgba(246,173,85,0.04) 0%, transparent 50%),
+                radial-gradient(circle at 80% 80%, rgba(79,209,197,0.04) 0%, transparent 50%);
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 28px;
+            animation: fadeDown 0.6s ease both;
+        }
+
+        .logo {
+            font-family: 'Press Start 2P', monospace;
+            font-size: clamp(18px, 4vw, 28px);
+            color: var(--amber);
+            text-shadow: 0 0 20px rgba(246,173,85,0.4);
+            letter-spacing: 2px;
+            margin-bottom: 6px;
+        }
+
+        .logo span { color: var(--teal); }
+
+        .home-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            font-family: 'Press Start 2P', monospace;
+            font-size: 7px;
+            padding: 5px 10px;
+            border-radius: 20px;
+            margin-top: 8px;
+            letter-spacing: 1px;
+            transition: all 0.4s ease;
+        }
+
+        .home-badge.home {
+            background: rgba(104,211,145,0.15);
+            color: var(--green);
+            border: 1px solid rgba(104,211,145,0.3);
+        }
+
+        .home-badge.away {
+            background: rgba(113,128,150,0.15);
+            color: var(--muted);
+            border: 1px solid rgba(113,128,150,0.2);
+        }
+
+        .home-badge .dot {
+            width: 6px;
+            height: 6px;
+            border-radius: 50%;
+        }
+
+        .home-badge.home .dot {
+            background: var(--green);
+            box-shadow: 0 0 6px var(--green);
+            animation: pulse 2s infinite;
+        }
+
+        .home-badge.away .dot {
+            background: var(--muted);
+        }
+
+        .sticky-note {
+            background: #fef3c7;
+            color: #1a1a2e;
+            border-radius: 4px;
+            padding: 20px 24px;
+            max-width: 480px;
+            width: 100%;
+            margin: 0 auto 32px;
+            position: relative;
+            transform: rotate(-1.2deg);
+            box-shadow:
+                0 4px 6px rgba(0,0,0,0.4),
+                0 1px 3px rgba(0,0,0,0.3),
+                inset 0 0 40px rgba(0,0,0,0.05);
+            animation: fadeDown 0.7s ease 0.1s both;
+        }
+
+        .sticky-note::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; right: 0;
+            height: 6px;
+            background: rgba(0,0,0,0.08);
+            border-radius: 4px 4px 0 0;
+        }
+
+        .sticky-note p {
+            font-family: 'Nunito', sans-serif;
+            font-size: 15px;
+            line-height: 1.7;
+            font-weight: 600;
+            color: #2d2d2d;
+        }
+
+        .sticky-note .signature {
+            margin-top: 12px;
+            font-size: 13px;
+            color: #555;
+            font-style: italic;
+        }
+
+        .content {
+            width: 100%;
+            max-width: 560px;
+            display: flex;
+            flex-direction: column;
+            gap: 24px;
+        }
+
+        .stream-container {
+            width: 100%;
+            background: var(--surface);
+            border-radius: 12px;
+            overflow: hidden;
+            animation: fadeUp 0.6s ease 0.2s both;
+            position: relative;
+            padding: 6px;
+            background: linear-gradient(135deg, var(--amber), var(--teal), var(--coral), var(--amber));
+            background-size: 300% 300%;
+            animation: fadeUp 0.6s ease 0.2s both, gradientShift 4s ease infinite;
+            box-shadow:
+                0 0 20px rgba(246,173,85,0.2),
+                0 0 40px rgba(79,209,197,0.1),
+                0 8px 32px rgba(0,0,0,0.4);
+        }
+
+        .stream-inner {
+            border-radius: 10px;
+            overflow: hidden;
+            background: var(--surface);
+        }
+
+        @keyframes gradientShift {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+
+        .stream-label {
+            font-family: 'Press Start 2P', monospace;
+            font-size: 8px;
+            color: var(--muted);
+            padding: 10px 14px;
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .stream-label::before {
+            content: '';
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: var(--coral);
+            box-shadow: 0 0 6px var(--coral);
+            animation: pulse 2s infinite;
+        }
+
+        .status-bar {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            padding: 12px 16px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            animation: fadeUp 0.6s ease 0.3s both;
+        }
+
+        #status { font-size: 13px; color: var(--muted); font-weight: 600; }
+
+        #timer {
+            font-family: 'Press Start 2P', monospace;
+            font-size: 14px;
+            color: var(--amber);
+            text-shadow: 0 0 10px rgba(246,173,85,0.3);
+        }
+
+        #claim-window { font-size: 12px; color: var(--teal); font-weight: 700; }
+        #message { font-size: 13px; color: var(--amber); font-weight: 700; }
+
+        .controls-bar {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            flex-wrap: wrap;
+            animation: fadeUp 0.6s ease 0.35s both;
+        }
+
+        .btn {
+            font-family: 'Press Start 2P', monospace;
+            font-size: 8px;
+            padding: 10px 16px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: transform 0.1s, box-shadow 0.1s;
+            letter-spacing: 0.5px;
+        }
+
+        .btn:active { transform: scale(0.96); }
+
+        .btn-claim {
+            background: var(--amber);
+            color: #1a1a2e;
+            box-shadow: 0 0 16px rgba(246,173,85,0.3);
+        }
+
+        .btn-claim:hover { box-shadow: 0 0 24px rgba(246,173,85,0.5); }
+
+        .btn-claim:disabled {
+            opacity: 0.3;
+            cursor: not-allowed;
+            box-shadow: none;
+        }
+
+        .btn-finish { background: var(--coral); color: #1a1a2e; }
+        .btn-clear { background: var(--surface); color: var(--text); border: 1px solid var(--border); }
+
+        #user-controls {
+            display: none;
+            align-items: center;
+            gap: 12px;
+            flex-wrap: wrap;
+        }
+
+        .color-wrap {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 12px;
+            color: var(--muted);
+            font-weight: 700;
+        }
+
+        #color-picker {
+            width: 36px;
+            height: 36px;
+            border: 2px solid var(--border);
+            border-radius: 6px;
+            cursor: pointer;
+            background: none;
+            padding: 2px;
+        }
+
+        .grid-container {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 16px;
+            animation: fadeUp 0.6s ease 0.4s both;
+        }
+
+        .grid-label {
+            font-family: 'Press Start 2P', monospace;
+            font-size: 7px;
+            color: var(--muted);
+            margin-bottom: 12px;
+            letter-spacing: 1px;
+        }
+
+        #led-grid {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 3px;
+        }
+
+        .led {
+            width: 16px;
+            height: 16px;
+            border-radius: 50%;
+            background: #1a2030;
+            border: 1px solid #2a3348;
+            cursor: pointer;
+            transition: transform 0.1s, box-shadow 0.15s;
+        }
+
+        .led:hover { transform: scale(1.3); border-color: var(--amber); }
+
+        @keyframes fadeDown {
+            from { opacity: 0; transform: translateY(-16px) rotate(-1.2deg); }
+            to { opacity: 1; transform: translateY(0) rotate(-1.2deg); }
+        }
+
+        @keyframes fadeUp {
+            from { opacity: 0; transform: translateY(16px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.3; }
+        }
+
+        .last-session-bar {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            padding: 10px 16px;
+            font-size: 12px;
+            color: var(--muted);
+            font-weight: 600;
+            animation: fadeUp 0.6s ease 0.35s both;
+        }
+
+        .last-session-bar span {
+            color: var(--teal);
+        }
+    </style>
+</head>
+<body>
+
+    <div class="header">
+        <div class="logo">Pixel<span>wave</span></div>
+        <div class="home-badge away" id="home-badge">
+            <div class="dot"></div>
+            <span id="home-text">KARL IS AWAY</span>
+        </div>
+    </div>
+
+    <div class="sticky-note">
+        <p>Hey! I've got a real LED board sitting in my house. Draw something on it for me to find when I get home. 👋</p>
+        <p class="signature">— Karl</p>
+    </div>
+
+    <div class="content">
+
+        <div class="stream-container">
+            <div class="stream-inner">
+                <div class="stream-label">LIVE</div>
+                <img src="http://10.0.0.81:8080/?action=stream" style="width:100%; display:block;" alt="Live Stream"/>
+            </div>
+        </div>
+
+        <div class="status-bar">
+            <div>
+                <div id="status">Connecting...</div>
+                <div id="message"></div>
+                <div id="claim-window"></div>
+            </div>
+            <div id="timer"></div>
+        </div>
+        <div class="last-session-bar" id="last-session-bar" style="display:none;">
+            ✏️ Last drawing: <span id="last-session-time"></span>
+        </div>
+
+        <div class="controls-bar">
+            <div class="name-wrap" id="name-wrap">
+                <input type="text" id="artist-name" maxlength="24" placeholder="Sign your work — what's your name? ✏️" />
+            </div>
+            <button class="btn btn-claim" id="claim-btn" onclick="claim()">CLAIM</button>
+            <div id="user-controls">
+                <div class="color-wrap">
+                    <span>COLOR</span>
+                    <input type="color" id="color-picker" value="#ff0000">
+                </div>
+                <button class="btn btn-clear" onclick="clearBoard()">CLEAR</button>
+                <button class="btn btn-finish" onclick="finish()">DONE</button>
+            </div>
+        </div>
+
+        <div class="grid-container">
+            <div class="grid-label">// LED MATRIX — CLICK TO DRAW</div>
+            <div id="led-grid"></div>
+        </div>
+
+    </div>
+
+    <script>
+        const NUM_LEDS = 180;
+        const grid = document.getElementById('led-grid');
+        const statusEl = document.getElementById('status');
+        const timerEl = document.getElementById('timer');
+        const messageEl = document.getElementById('message');
+        const claimWindowEl = document.getElementById('claim-window');
+        const claimBtn = document.getElementById('claim-btn');
+        const userControls = document.getElementById('user-controls');
+        const homeBadge = document.getElementById('home-badge');
+        const homeText = document.getElementById('home-text');
+        let iAmActive = false;
+        let ws = null;
+
+        for (let i = 0; i < NUM_LEDS; i++) {
+            const led = document.createElement('div');
+            led.className = 'led';
+            led.addEventListener('click', () => clickLed(i));
+            grid.appendChild(led);
+        }
+
+        function updateHomeBadge(isHome) {
+            if (isHome) {
+                homeBadge.className = 'home-badge home';
+                homeText.textContent = 'KARL IS HOME';
+            } else {
+                homeBadge.className = 'home-badge away';
+                homeText.textContent = 'KARL IS AWAY';
+            }
+        }
+
+        function connectWS() {
+            ws = new WebSocket(`ws://${location.host}/ws`);
+
+            ws.onmessage = (event) => {
+                const data = JSON.parse(event.data);
+
+                if (data.type === 'init') {
+                    renderBoard(data.board);
+                    updateHomeBadge(data.home);
+                    if (data.session.active) {
+                        setSessionActive(false);
+                    } else {
+                        setSessionIdle();
+                    }
+                    if (data.last_session) {
+                        showLastSession(data.last_session.ended_at, data.last_session.duration, data.last_session.name);
+                    }
+                }
+                else if (data.type === 'home_status') {
+                    updateHomeBadge(data.home);
+                }
+                else if (data.type === 'session_start') {
+                    iAmActive = data.is_you;
+                    setSessionActive(data.is_you);
+                    messageEl.textContent = '';
+                    claimWindowEl.textContent = '';
+                }
+                else if (data.type === 'session_end') {
+                    iAmActive = false;
+                    userControls.style.display = 'none';
+                    timerEl.textContent = '';
+                    claimBtn.disabled = true;
+                    claimBtn.style.opacity = '0.3';
+                    claimBtn.textContent = 'IN USE';
+                    messageEl.textContent = data.reason === 'timeout' ? 'Session timed out.' : 'Current user is finished.';
+                    statusEl.textContent = 'Waiting for board to open...';
+                }
+                else if (data.type === 'claim_window') {
+                    claimWindowEl.textContent = `Opens in ${data.seconds}s...`;
+                }
+                else if (data.type === 'claim_window_tick') {
+                    claimWindowEl.textContent = `Opens in ${data.seconds}s...`;
+                }
+                else if (data.type === 'last_session') {
+                    showLastSession(data.ended_at, data.duration, data.name);
+                }
+                else if (data.type === 'claim_window_end') {
+                    claimWindowEl.textContent = '';
+                    messageEl.textContent = '';
+                    setSessionIdle();
+                }
+                else if (data.type === 'timer') {
+                    const mins = Math.floor(data.remaining / 60);
+                    const secs = data.remaining % 60;
+                    timerEl.textContent = `${mins}:${secs.toString().padStart(2, '0')}`;
+                }
+                else if (data.type === 'led_update') {
+                    updateLed(data.index, data.color);
+                }
+                else if (data.type === 'clear') {
+                    renderBoard(new Array(NUM_LEDS).fill({r:0,g:0,b:0}));
+                }
+            };
+
+            ws.onopen = () => statusEl.textContent = 'Board is free — claim it!';
+            ws.onclose = () => {
+                statusEl.textContent = 'Reconnecting...';
+                setTimeout(connectWS, 2000);
+            };
+        }
+
+        function setSessionActive(youAreInControl) {
+            claimBtn.disabled = true;
+            claimBtn.style.opacity = '0.3';
+            claimBtn.textContent = 'IN USE';
+            if (youAreInControl) {
+                userControls.style.display = 'flex';
+                statusEl.textContent = 'You have control!';
+            } else {
+                userControls.style.display = 'none';
+                statusEl.textContent = 'Board is in use.';
+            }
+        }
+
+        function setSessionIdle() {
+            iAmActive = false;
+            userControls.style.display = 'none';
+            timerEl.textContent = '';
+            claimBtn.disabled = false;
+            claimBtn.style.opacity = '1';
+            claimBtn.textContent = 'CLAIM';
+            statusEl.textContent = 'Board is free — claim it!';
+            document.getElementById('name-wrap').style.display = 'block';
+        }
+
+        function renderBoard(board) {
+            board.forEach((color, i) => updateLed(i, color));
+        }
+
+        function updateLed(index, color) {
+            const led = grid.children[index];
+            if (!led) return;
+            const isLit = color.r > 0 || color.g > 0 || color.b > 0;
+            led.style.background = isLit ? `rgb(${color.r},${color.g},${color.b})` : '';
+            led.style.boxShadow = isLit ? `0 0 6px rgb(${color.r},${color.g},${color.b})` : '';
+        }
+
+        function clickLed(index) {
+            if (!iAmActive) return;
+            const led = grid.children[index];
+            const isLit = led.style.background && led.style.background !== '';
+            if (isLit) {
+                fetch(`/led/${index}`, {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({r: 0, g: 0, b: 0})
+                });
+            } else {
+                const hex = document.getElementById('color-picker').value;
+                const r = parseInt(hex.slice(1,3), 16);
+                const g = parseInt(hex.slice(3,5), 16);
+                const b = parseInt(hex.slice(5,7), 16);
+                fetch(`/led/${index}`, {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({r, g, b})
+                });
+            }
+        }
+
+        function clearBoard() {
+            fetch('/clear', { method: 'POST' });
+        }
+
+        function finish() {
+            if (confirm('Done already? Your art will stay on the board for the next visitor.')) {
+                ws.send(JSON.stringify({type: 'finish'}));
+            }
+        }
+
+        function claim() {
+            const name = document.getElementById('artist-name').value.trim() || 'Anonymous';
+            ws.send(JSON.stringify({type: 'claim', name: name}));
+            document.getElementById('name-wrap').style.display = 'none';
+        }
+
+        function showLastSession(endedAt, duration, name) {
+            const bar = document.getElementById('last-session-bar');
+            const timeEl = document.getElementById('last-session-time');
+            const date = new Date(endedAt * 1000);
+            const dateStr = date.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+            const timeStr = date.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' });
+            const durationMins = Math.floor(duration / 60);
+            const durationSecs = duration % 60;
+            let durationStr = duration < 60 ? `${duration}s` : `${durationMins}m ${durationSecs}s`;
+            const artist = name || 'Anonymous';
+            timeEl.textContent = `by ${artist} on ${dateStr} at ${timeStr} — drew for ${durationStr}`;
+            bar.style.display = 'block';
+        }
+
+        connectWS();
+    </script>
+</body>
+</html>
