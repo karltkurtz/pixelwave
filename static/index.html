@@ -438,6 +438,21 @@
 
         .venmo-btn:hover { box-shadow: 0 0 12px rgba(104,211,145,0.3); }
 
+        .shoutout-bar {
+            background: var(--surface);
+            border: 1px solid rgba(104,211,145,0.3);
+            border-radius: 10px;
+            padding: 10px 16px;
+            font-size: 12px;
+            color: var(--muted);
+            font-weight: 600;
+            animation: fadeUp 0.6s ease 0.35s both;
+        }
+
+        .shoutout-bar span {
+            color: var(--green);
+        }
+
     </style>
 </head>
 <body>
@@ -482,6 +497,10 @@
 
         <div class="last-session-bar" id="last-session-bar" style="display:none;">
             ✏️ Last drawing: <span id="last-session-time"></span>
+        </div>
+
+        <div class="shoutout-bar" id="shoutout-bar" style="display:none;">
+            🎉 Shoutout to <span id="shoutout-name"></span> for the <span id="shoutout-amount"></span> donation!
         </div>
 
         <div class="controls-bar">
@@ -543,7 +562,7 @@
             ws.onmessage = (event) => {
                 const data = JSON.parse(event.data);
 
-                if (data.type === 'init') {
+               if (data.type === 'init') {
                     renderBoard(data.board);
                     updateHomeBadge(data.home);
                     if (data.session.active) {
@@ -553,6 +572,9 @@
                     }
                     if (data.last_session) {
                         showLastSession(data.last_session.ended_at, data.last_session.duration, data.last_session.name);
+                    }
+                    if (data.shoutout) {
+                        showShoutout(data.shoutout.name, data.shoutout.label);
                     }
                 }
                 else if (data.type === 'home_status') {
@@ -582,6 +604,9 @@
                 }
                 else if (data.type === 'last_session') {
                     showLastSession(data.ended_at, data.duration, data.name);
+                }
+                else if (data.type === 'shoutout') {
+                    showShoutout(data.name, data.label);
                 }
                 else if (data.type === 'claim_window_end') {
                     claimWindowEl.textContent = '';
@@ -694,6 +719,13 @@
             let durationStr = duration < 60 ? `${duration}s` : `${durationMins}m ${durationSecs}s`;
             const artist = name || 'Anonymous';
             timeEl.textContent = `by ${artist} on ${dateStr} at ${timeStr} — drew for ${durationStr}`;
+            bar.style.display = 'block';
+        }
+
+        function showShoutout(name, label) {
+            const bar = document.getElementById('shoutout-bar');
+            document.getElementById('shoutout-name').textContent = name;
+            document.getElementById('shoutout-amount').textContent = label;
             bar.style.display = 'block';
         }
 

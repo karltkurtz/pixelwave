@@ -11,6 +11,7 @@ app.mount("/static", StaticFiles(directory="static"), name="static")
 
 NUM_LEDS = 180
 BOARD_FILE = "board_state.json"
+SHOUTOUT_FILE = "shoutout.json"
 CLAIM_WINDOW = 10
 ADMIN_PASSWORD = "litebrite123"
 
@@ -23,6 +24,16 @@ def load_board():
 def save_board():
     with open(BOARD_FILE, "w") as f:
         json.dump(board_state, f)
+
+def load_shoutout():
+    if os.path.exists(SHOUTOUT_FILE):
+        with open(SHOUTOUT_FILE) as f:
+            return json.load(f)
+    return {"name": None, "amount": None, "label": None, "time": None}
+
+def save_shoutout():
+    with open(SHOUTOUT_FILE, "w") as f:
+        json.dump(shoutout, f)
 
 board_state = load_board()
 
@@ -39,6 +50,8 @@ session = {
 home_status = {"home": False}
 
 session_history = []
+
+shoutout = load_shoutout()
 
 def save_session(duration_seconds, board_snapshot, name):
     session_history.append({
@@ -149,6 +162,25 @@ async def root():
         "Pragma": "no-cache"
     })
 
+@app.get("/donate")
+async def donate():
+    with open("static/donate.html") as f:
+        content = f.read()
+    return HTMLResponse(content, headers={
+        "Cache-Control": "no-store, no-cache, must-revalidate",
+        "Pragma": "no-cache"
+    })
+
+@app.post("/shoutout")
+async def post_shoutout(payload: dict):
+    shoutout["name"] = payload.get("name", "Anonymous")
+    shoutout["amount"] = payload.get("amount")
+    shoutout["label"] = payload.get("label", "a generous amount")
+    shoutout["time"] = time.time()
+    save_shoutout()
+    await broadcast({"type": "shoutout", "name": shoutout["name"], "label": shoutout["label"]})
+    return {"status": "ok"}
+
 @app.post("/admin/home")
 async def set_home(payload: dict):
     if payload.get("password") != ADMIN_PASSWORD:
@@ -168,7 +200,8 @@ async def websocket_endpoint(websocket: WebSocket):
         "board": board_state,
         "session": {"active": session["active"]},
         "home": home_status["home"],
-        "last_session": session_history[-1] if session_history else None
+        "last_session": session_history[-1] if session_history else None,
+        "shoutout": shoutout if shoutout["name"] else None
     })
 
     try:
