@@ -242,11 +242,12 @@
             gap: 12px;
             flex-wrap: wrap;
             animation: fadeUp 0.6s ease 0.35s both;
+            flex-direction: row;
         }
 
         .name-wrap {
-            width: 100%;
-            margin-bottom: 4px;
+            width: 50%;
+            margin-bottom: 0;
         }
 
         .name-wrap input {
@@ -486,6 +487,10 @@
             </div>
         </div>
 
+        <div class="shoutout-bar" id="shoutout-bar" style="display:none;">
+            🎉 Shoutout to <span id="shoutout-name"></span> for the <span id="shoutout-amount"></span> donation!
+        </div>
+
         <div class="status-bar">
             <div>
                 <div id="status">Connecting...</div>
@@ -497,10 +502,6 @@
 
         <div class="last-session-bar" id="last-session-bar" style="display:none;">
             ✏️ Last drawing: <span id="last-session-time"></span>
-        </div>
-
-        <div class="shoutout-bar" id="shoutout-bar" style="display:none;">
-            🎉 Shoutout to <span id="shoutout-name"></span> for the <span id="shoutout-amount"></span> donation!
         </div>
 
         <div class="controls-bar">
