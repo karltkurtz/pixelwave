@@ -433,8 +433,8 @@
         }
 
         .led {
-            width: 16px;
-            height: 16px;
+            width: 14px;
+            height: 14px;
             border-radius: 50%;
             background: #1a2030;
             border: 1px solid #2a3348;
@@ -526,16 +526,16 @@
         </div>
 
         <div class="grid-container">
-            <div class="grid-label">// LED MATRIX — CLICK TO DRAW</div>
+            <div class="grid-label">// LED STRIP — CLICK TO DRAW</div>
             <div id="led-grid"></div>
         </div>
 
     </div>
 
     <script>
-        const NUM_LEDS = 180;
-        const COLS = 15;
-        const ROWS = 12;
+        const NUM_LEDS = 32;
+        const COLS = 32;
+        const ROWS = 1;
         const grid = document.getElementById('led-grid');
         const statusEl = document.getElementById('status');
         const timerEl = document.getElementById('timer');
