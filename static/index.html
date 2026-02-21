@@ -642,6 +642,10 @@
             // Orbit controls
             let isOrbiting = false;
             let prevMouse = { x: 0, y: 0 };
+            const THETA_MIN = -Math.PI / 4;
+            const THETA_MAX = Math.PI / 4;
+            const PHI_MIN = Math.PI / 4;
+            const PHI_MAX = 3 * Math.PI / 4;
             let spherical = { theta: 0, phi: Math.PI / 2, radius: 0.5 };
 
             function updateCamera() {
@@ -663,8 +667,8 @@
                 const dx = e.clientX - prevMouse.x;
                 const dy = e.clientY - prevMouse.y;
                 prevMouse = { x: e.clientX, y: e.clientY };
-                spherical.theta -= dx * 0.01;
-                spherical.phi = Math.max(0.1, Math.min(Math.PI - 0.1, spherical.phi + dy * 0.01));
+                spherical.theta = Math.max(THETA_MIN, Math.min(THETA_MAX, spherical.theta - dx * 0.01));
+                spherical.phi = Math.max(PHI_MIN, Math.min(PHI_MAX, spherical.phi + dy * 0.01));
                 updateCamera();
             });
 
@@ -684,8 +688,8 @@
                     const dx = e.touches[0].clientX - prevTouch.x;
                     const dy = e.touches[0].clientY - prevTouch.y;
                     prevTouch = { x: e.touches[0].clientX, y: e.touches[0].clientY };
-                    spherical.theta -= dx * 0.01;
-                    spherical.phi = Math.max(0.1, Math.min(Math.PI - 0.1, spherical.phi + dy * 0.01));
+                    spherical.theta = Math.max(THETA_MIN, Math.min(THETA_MAX, spherical.theta - dx * 0.01));
+                    spherical.phi = Math.max(PHI_MIN, Math.min(PHI_MAX, spherical.phi + dy * 0.01));
                     updateCamera();
                 }
             }, { passive: true });
