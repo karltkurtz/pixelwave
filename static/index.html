@@ -596,35 +596,25 @@
                 const model = gltf.scene;
                 threeScene.add(model);
 
-                // Build LED orbs aligned to your Blender coordinates
-                const COLS = 32;
-                const ROWS = 16;
-                const startY = -0.255905;
-                const startZ = 0.116681;
-                const spacingY = 0.01651;
-                const spacingZ = -0.015557;
-                const x = 0.008;
+                // Collect named LED meshes from GLB model
+                const ledMeshes = [];
+                model.traverse((child) => {
+                    if (child.isMesh && child.name.startsWith('LED_')) {
+                        const index = parseInt(child.name.split('_')[1]);
+                        ledMeshes[index] = child;
+                        child.material = new THREE.MeshStandardMaterial({
+                            color: 0x111111,
+                            emissive: 0x000000,
+                            emissiveIntensity: 0,
+                            roughness: 0.3,
+                            metalness: 0.2
+                        });
+                    }
+                });
 
-                const geo = new THREE.SphereGeometry(0.005, 12, 12);
-
-                for (let i = 0; i < NUM_LEDS; i++) {
-                    const col = i % COLS;
-                    const row = Math.floor(i / COLS);
-                    const threeX = startY + col * spacingY;
-                    const threeY = startZ + row * spacingZ;
-
-                    const mat = new THREE.MeshStandardMaterial({
-                        color: 0x111111,
-                        emissive: 0x000000,
-                        emissiveIntensity: 0,
-                        roughness: 0.3,
-                        metalness: 0.1
-                    });
-
-                    const mesh = new THREE.Mesh(geo, mat);
-                    mesh.position.set(x, threeY, threeX);
-                    threeScene.add(mesh);
-                    threeOrbs.push(mesh);
+                // Only map the first 32
+                for (let i = 0; i < 32; i++) {
+                    if (ledMeshes[i]) threeOrbs.push(ledMeshes[i]);
                 }
 
                 boardColors.forEach((c, i) => updateOrb(i, c));
