@@ -6,6 +6,7 @@
     <title>The LED Board</title>
     <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Nunito:wght@400;600;700&display=swap" rel="stylesheet">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/loaders/GLTFLoader.js"></script>
     <style>
         :root {
             --bg: #0e1117;
@@ -564,6 +565,7 @@
         let animFrameId = null;
 
         function initThreeJS() {
+            threeOrbs = [];
             const canvas = document.getElementById('threejs-canvas');
             const w = canvas.clientWidth;
             const h = canvas.clientHeight;
@@ -572,52 +574,90 @@
             threeRenderer.setSize(w, h);
             threeRenderer.setPixelRatio(window.devicePixelRatio);
             threeRenderer.setClearColor(0x9ca3af, 1);
+            threeRenderer.shadowMap.enabled = true;
 
             threeScene = new THREE.Scene();
 
             const aspect = w / h;
-            threeCamera = new THREE.PerspectiveCamera(45, aspect, 0.1, 1000);
-            threeCamera.position.set(0, 0, 28);
+            threeCamera = new THREE.PerspectiveCamera(45, aspect, 0.001, 1000);
+            threeCamera.position.set(0.5, 0, 0);
+            threeCamera.lookAt(0, 0, 0);
 
-            const ambient = new THREE.AmbientLight(0xffffff, 0.1);
+            // Lighting
+            const ambient = new THREE.AmbientLight(0xffffff, 0.6);
             threeScene.add(ambient);
+            const dirLight = new THREE.DirectionalLight(0xffffff, 0.8);
+            dirLight.position.set(1, 1, 1);
+            threeScene.add(dirLight);
 
-            const spacingX = 1.6;
-            const spacingY = 1.6;
-            const offsetX = ((COLS - 1) * spacingX) / 2;
-            const offsetY = ((ROWS - 1) * spacingY) / 2;
-            const geo = new THREE.SphereGeometry(0.55, 16, 16);
+            // Load GLB model
+            const loader = new THREE.GLTFLoader();
+            loader.load('/static/board.glb', (gltf) => {
+                const model = gltf.scene;
+                threeScene.add(model);
 
-            for (let i = 0; i < NUM_LEDS; i++) {
-                const col = i % COLS;
-                const row = Math.floor(i / COLS);
-                const x = col * spacingX - offsetX;
-                const y = -(row * spacingY - offsetY);
-                const mat = new THREE.MeshStandardMaterial({
-                    color: 0x111827,
-                    emissive: 0x000000,
-                    emissiveIntensity: 0,
-                    roughness: 0.3,
-                    metalness: 0.1
+                // Build LED orbs aligned to your Blender coordinates
+                const COLS = 32;
+                const ROWS = 16;
+                const startY = -0.255905;
+                const startZ = 0.116681;
+                const spacingY = 0.01651;
+                const spacingZ = -0.015557;
+                const x = 0.008;
+
+                const geo = new THREE.SphereGeometry(0.005, 12, 12);
+
+                for (let i = 0; i < NUM_LEDS; i++) {
+                    const col = i % COLS;
+                    const row = Math.floor(i / COLS);
+                    const threeX = startY + col * spacingY;
+                    const threeY = startZ + row * spacingZ;
+
+                    const mat = new THREE.MeshStandardMaterial({
+                        color: 0x111111,
+                        emissive: 0x000000,
+                        emissiveIntensity: 0,
+                        roughness: 0.3,
+                        metalness: 0.1
+                    });
+
+                    const mesh = new THREE.Mesh(geo, mat);
+                    mesh.position.set(x, threeY, threeX);
+                    threeScene.add(mesh);
+                    threeOrbs.push(mesh);
+                }
+
+                boardColors.forEach((c, i) => updateOrb(i, c));
+
+                // Raycasting for click interaction
+                canvas.addEventListener('click', (e) => {
+                    if (!iAmActive) return;
+                    const rect = canvas.getBoundingClientRect();
+                    const mouse = new THREE.Vector2(
+                        ((e.clientX - rect.left) / rect.width) * 2 - 1,
+                        -((e.clientY - rect.top) / rect.height) * 2 + 1
+                    );
+                    const raycaster = new THREE.Raycaster();
+                    raycaster.setFromCamera(mouse, threeCamera);
+                    const intersects = raycaster.intersectObjects(threeOrbs);
+                    if (intersects.length > 0) {
+                        const index = threeOrbs.indexOf(intersects[0].object);
+                        if (index >= 0) clickLed(index);
+                    }
                 });
-                const mesh = new THREE.Mesh(geo, mat);
-                mesh.position.set(x, y, 0);
-                threeScene.add(mesh);
-                threeOrbs.push(mesh);
-            }
+            });
 
-            boardColors.forEach((c, i) => updateOrb(i, c));
             threeAnimate();
 
             // Orbit controls
             let isOrbiting = false;
             let prevMouse = { x: 0, y: 0 };
-            let spherical = { theta: 0, phi: Math.PI / 2, radius: 28 };
+            let spherical = { theta: 0, phi: Math.PI / 2, radius: 0.5 };
 
             function updateCamera() {
-                threeCamera.position.x = spherical.radius * Math.sin(spherical.phi) * Math.sin(spherical.theta);
-                threeCamera.position.y = spherical.radius * Math.cos(spherical.phi);
-                threeCamera.position.z = spherical.radius * Math.sin(spherical.phi) * Math.cos(spherical.theta);
+                threeCamera.position.x = spherical.radius * Math.cos(spherical.theta) * Math.sin(spherical.phi);
+                threeCamera.position.y = spherical.radius * Math.sin(spherical.theta) * Math.sin(spherical.phi);
+                threeCamera.position.z = spherical.radius * Math.cos(spherical.phi);
                 threeCamera.lookAt(0, 0, 0);
             }
 
@@ -640,16 +680,13 @@
 
             canvas.addEventListener('wheel', (e) => {
                 e.preventDefault();
-                spherical.radius = Math.max(10, Math.min(60, spherical.radius + e.deltaY * 0.05));
+                spherical.radius = Math.max(0.1, Math.min(2, spherical.radius + e.deltaY * 0.001));
                 updateCamera();
             }, { passive: false });
 
             let prevTouch = null;
-
             canvas.addEventListener('touchstart', (e) => {
-                if (e.touches.length === 1) {
-                    prevTouch = { x: e.touches[0].clientX, y: e.touches[0].clientY };
-                }
+                if (e.touches.length === 1) prevTouch = { x: e.touches[0].clientX, y: e.touches[0].clientY };
             }, { passive: true });
 
             canvas.addEventListener('touchmove', (e) => {
