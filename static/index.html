@@ -769,7 +769,7 @@
                         setSessionIdle();
                     }
                     if (data.last_session) {
-                        showLastSession(data.last_session.ended_at, data.last_session.duration, data.last_session.name);
+                        showLastSession(data.last_session.ended_at, data.last_session.duration, data.last_session.name, data.last_session.location);
                     }
                     if (data.shoutout) {
                         showShoutout(data.shoutout.name, data.shoutout.label);
@@ -801,7 +801,7 @@
                     claimWindowEl.textContent = `Opens in ${data.seconds}s...`;
                 }
                 else if (data.type === 'last_session') {
-                    showLastSession(data.ended_at, data.duration, data.name);
+                    showLastSession(data.ended_at, data.duration, data.name, data.location);
                 }
                 else if (data.type === 'shoutout') {
                     showShoutout(data.name, data.label);
@@ -958,7 +958,7 @@
             document.getElementById('name-wrap').style.display = 'none';
         }
 
-        function showLastSession(endedAt, duration, name) {
+        function showLastSession(endedAt, duration, name, location) {
             const bar = document.getElementById('last-session-bar');
             const timeEl = document.getElementById('last-session-time');
             const date = new Date(endedAt * 1000);
@@ -968,7 +968,8 @@
             const durationSecs = duration % 60;
             let durationStr = duration < 60 ? `${duration}s` : `${durationMins}m ${durationSecs}s`;
             const artist = name || 'Anonymous';
-            timeEl.textContent = `by ${artist} on ${dateStr} at ${timeStr} — drew for ${durationStr}`;
+            const locationStr = location && location !== 'Unknown' ? ` — 📍 ${location}` : '';
+            timeEl.textContent = `by ${artist} on ${dateStr} at ${timeStr} — drew for ${durationStr}${locationStr}`;
             bar.style.display = 'block';
         }
 

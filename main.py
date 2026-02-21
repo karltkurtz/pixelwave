@@ -58,7 +58,8 @@ session = {
     "duration": 300,
     "claim_window": False,
     "claim_window_end": None,
-    "artist_name": None
+    "artist_name": None,
+    "location": None
 }
 
 home_status = {"home": False}
@@ -69,12 +70,13 @@ shoutout = load_shoutout()
 
 guestbook = load_guestbook()
 
-def save_session(duration_seconds, board_snapshot, name):
+def save_session(duration_seconds, board_snapshot, name, location="Unknown"):
     session_history.append({
         "ended_at": time.time(),
         "duration": duration_seconds,
         "board": board_snapshot,
-        "name": name
+        "name": name,
+        "location": location
     })
     if len(session_history) > 10:
         session_history.pop(0)
@@ -133,12 +135,13 @@ async def broadcast(message: dict):
 async def end_session(reason: str):
     duration = int(time.time() - session["start_time"]) if session["start_time"] else 0
     name = session.get("artist_name", "Anonymous")
-    save_session(duration, list(board_state), name)
-    await broadcast({"type": "last_session", "ended_at": session_history[-1]["ended_at"], "duration": duration, "name": name})
+    save_session(duration, list(board_state), name, session.get("location", "Unknown"))
+    await broadcast({"type": "last_session", "ended_at": session_history[-1]["ended_at"], "duration": duration, "name": name, "location": session_history[-1].get("location", "Unknown")})
     session["active"] = False
     session["user_id"] = None
     session["start_time"] = None
     session["artist_name"] = None
+    session["location"] = None
     session["claim_window"] = True
     session["claim_window_end"] = time.time() + CLAIM_WINDOW
     await broadcast({"type": "session_end", "reason": reason})
@@ -298,6 +301,18 @@ async def websocket_endpoint(websocket: WebSocket):
                     session["user_id"] = user_id
                     session["start_time"] = time.time()
                     session["artist_name"] = data.get("name", "Anonymous")
+                    ip = websocket.headers.get("x-forwarded-for", websocket.client.host)
+                    location = "Unknown"
+                    try:
+                        with urllib.request.urlopen(f"http://ip-api.com/json/{ip}?fields=city,regionName,country", timeout=3) as r:
+                            geo = json.loads(r.read())
+                            if geo.get("city"):
+                                location = f"{geo['city']}, {geo['regionName']}, {geo['country']}"
+                            elif geo.get("country"):
+                                location = geo["country"]
+                    except:
+                        pass
+                    session["location"] = location
                     for client in clients:
                         try:
                             await client.send_json({
