@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>The LED Board</title>
     <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Nunito:wght@400;600;700&display=swap" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
     <style>
         :root {
             --bg: #0e1117;
@@ -150,6 +151,52 @@
             font-style: italic;
         }
 
+        .action-buttons {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            justify-content: center;
+            margin-bottom: 28px;
+            animation: fadeUp 0.6s ease 0.15s both;
+        }
+
+        .action-btn {
+            font-family: 'Press Start 2P', monospace;
+            font-size: 7px;
+            padding: 10px 14px;
+            border-radius: 8px;
+            text-decoration: none;
+            letter-spacing: 0.5px;
+            transition: transform 0.1s, box-shadow 0.1s;
+            border: 1px solid var(--border);
+        }
+
+        .action-btn:active { transform: scale(0.96); }
+
+        .guestbook-btn {
+            background: rgba(79,209,197,0.1);
+            color: var(--teal);
+            border-color: rgba(79,209,197,0.3);
+        }
+
+        .guestbook-btn:hover { box-shadow: 0 0 12px rgba(79,209,197,0.3); }
+
+        .email-btn {
+            background: rgba(246,173,85,0.1);
+            color: var(--amber);
+            border-color: rgba(246,173,85,0.3);
+        }
+
+        .email-btn:hover { box-shadow: 0 0 12px rgba(246,173,85,0.3); }
+
+        .venmo-btn {
+            background: rgba(104,211,145,0.1);
+            color: var(--green);
+            border-color: rgba(104,211,145,0.3);
+        }
+
+        .venmo-btn:hover { box-shadow: 0 0 12px rgba(104,211,145,0.3); }
+
         .content {
             width: 100%;
             max-width: 560px;
@@ -158,6 +205,7 @@
             gap: 24px;
         }
 
+        /* Stream container */
         .stream-container {
             width: 100%;
             border-radius: 12px;
@@ -179,19 +227,6 @@
             background: var(--surface);
         }
 
-        .stream-inner img {
-            width: 100%;
-            display: block;
-            aspect-ratio: 16/9;
-            object-fit: cover;
-        }
-
-        @keyframes gradientShift {
-            0% { background-position: 0% 50%; }
-            50% { background-position: 100% 50%; }
-            100% { background-position: 0% 50%; }
-        }
-
         .stream-label {
             font-family: 'Press Start 2P', monospace;
             font-size: 8px;
@@ -200,10 +235,17 @@
             border-bottom: 1px solid var(--border);
             display: flex;
             align-items: center;
+            justify-content: space-between;
             gap: 8px;
         }
 
-        .stream-label::before {
+        .stream-label-left {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .stream-label-left::before {
             content: '';
             width: 8px;
             height: 8px;
@@ -211,6 +253,43 @@
             background: var(--coral);
             box-shadow: 0 0 6px var(--coral);
             animation: pulse 2s infinite;
+        }
+
+        .view-toggle {
+            font-family: 'Press Start 2P', monospace;
+            font-size: 6px;
+            padding: 5px 8px;
+            border-radius: 4px;
+            border: 1px solid var(--border);
+            background: var(--surface);
+            color: var(--teal);
+            cursor: pointer;
+            transition: all 0.2s;
+            letter-spacing: 0.5px;
+        }
+
+        .view-toggle:hover {
+            background: rgba(79,209,197,0.1);
+            border-color: var(--teal);
+        }
+
+        .stream-inner img {
+            width: 100%;
+            display: block;
+            aspect-ratio: 16/9;
+            object-fit: cover;
+        }
+
+        #threejs-canvas {
+            width: 100%;
+            aspect-ratio: 16/9;
+            display: none;
+        }
+
+        @keyframes gradientShift {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
         }
 
         .status-bar {
@@ -235,6 +314,30 @@
 
         #claim-window { font-size: 12px; color: var(--teal); font-weight: 700; }
         #message { font-size: 13px; color: var(--amber); font-weight: 700; }
+
+        .last-session-bar {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            padding: 10px 16px;
+            font-size: 12px;
+            color: var(--muted);
+            font-weight: 600;
+        }
+
+        .last-session-bar span { color: var(--teal); }
+
+        .shoutout-bar {
+            background: var(--surface);
+            border: 1px solid rgba(104,211,145,0.3);
+            border-radius: 10px;
+            padding: 10px 16px;
+            font-size: 12px;
+            color: var(--muted);
+            font-weight: 600;
+        }
+
+        .shoutout-bar span { color: var(--green); }
 
         .controls-bar {
             display: flex;
@@ -265,13 +368,8 @@
             transition: border-color 0.2s;
         }
 
-        .name-wrap input:focus {
-            border-color: var(--amber);
-        }
-
-        .name-wrap input::placeholder {
-            color: var(--muted);
-        }
+        .name-wrap input:focus { border-color: var(--amber); }
+        .name-wrap input::placeholder { color: var(--muted); }
 
         .btn {
             font-family: 'Press Start 2P', monospace;
@@ -378,81 +476,13 @@
             50% { opacity: 0.3; }
         }
 
-        .last-session-bar {
-            background: var(--surface);
-            border: 1px solid var(--border);
-            border-radius: 10px;
-            padding: 10px 16px;
-            font-size: 12px;
-            color: var(--muted);
-            font-weight: 600;
-            animation: fadeUp 0.6s ease 0.35s both;
-        }
-
-        .last-session-bar span {
-            color: var(--teal);
-        }
-
-                .action-buttons {
-            display: flex;
-            gap: 10px;
-            flex-wrap: wrap;
-            justify-content: center;
-            margin-bottom: 28px;
-            animation: fadeUp 0.6s ease 0.15s both;
-        }
-
-        .action-btn {
-            font-family: 'Press Start 2P', monospace;
-            font-size: 7px;
-            padding: 10px 14px;
-            border-radius: 8px;
-            text-decoration: none;
-            letter-spacing: 0.5px;
-            transition: transform 0.1s, box-shadow 0.1s;
-            border: 1px solid var(--border);
-        }
-
-        .action-btn:active { transform: scale(0.96); }
-
-        .guestbook-btn {
+        .btn-view {
             background: rgba(79,209,197,0.1);
             color: var(--teal);
-            border-color: rgba(79,209,197,0.3);
+            border: 1px solid rgba(79,209,197,0.3);
         }
 
-        .guestbook-btn:hover { box-shadow: 0 0 12px rgba(79,209,197,0.3); }
-
-        .email-btn {
-            background: rgba(246,173,85,0.1);
-            color: var(--amber);
-            border-color: rgba(246,173,85,0.3);
-        }
-
-        .email-btn:hover { box-shadow: 0 0 12px rgba(246,173,85,0.3); }
-
-        .venmo-btn {
-            background: rgba(104,211,145,0.1);
-            color: var(--green);
-            border-color: rgba(104,211,145,0.3);
-        }
-
-        .venmo-btn:hover { box-shadow: 0 0 12px rgba(104,211,145,0.3); }
-
-        .shoutout-bar {
-            background: var(--surface);
-            border: 1px solid rgba(104,211,145,0.3);
-            border-radius: 10px;
-            padding: 10px 16px;
-            font-size: 12px;
-            color: var(--muted);
-            font-weight: 600;
-            animation: fadeUp 0.6s ease 0.35s both;
-        }
-
-        .shoutout-bar span {
-            color: var(--green);
-        }
+        .btn-view:hover { box-shadow: 0 0 12px rgba(79,209,197,0.3); }
 
     </style>
 </head>
@@ -482,8 +512,11 @@
 
         <div class="stream-container">
             <div class="stream-inner">
-                <div class="stream-label">LIVE</div>
+                <div class="stream-label">
+                    <div class="stream-label-left">LIVE</div>
+                </div>
                 <img id="stream-img" alt="Live Stream"/>
+                <canvas id="threejs-canvas"></canvas>
             </div>
         </div>
 
@@ -509,6 +542,7 @@
                 <input type="text" id="artist-name" maxlength="24" placeholder="Sign your work — what's your name? ✏️" />
             </div>
             <button class="btn btn-claim" id="claim-btn" onclick="claim()">CLAIM</button>
+            <button class="btn btn-view" id="view-toggle" onclick="toggleView()">⬡ 3D VIEW</button>
             <div id="user-controls">
                 <div class="color-wrap">
                     <span>COLOR</span>
@@ -528,6 +562,8 @@
 
     <script>
         const NUM_LEDS = 180;
+        const COLS = 15;
+        const ROWS = 12;
         const grid = document.getElementById('led-grid');
         const statusEl = document.getElementById('status');
         const timerEl = document.getElementById('timer');
@@ -539,7 +575,9 @@
         const homeText = document.getElementById('home-text');
         let iAmActive = false;
         let ws = null;
+        let boardColors = new Array(NUM_LEDS).fill({r:0,g:0,b:0});
 
+        // Build LED grid
         for (let i = 0; i < NUM_LEDS; i++) {
             const led = document.createElement('div');
             led.className = 'led';
@@ -547,6 +585,140 @@
             grid.appendChild(led);
         }
 
+        // =====================
+        // THREE.JS SETUP
+        // =====================
+        let threeActive = false;
+        let threeRenderer, threeScene, threeCamera, threeOrbs = [];
+        let animFrameId = null;
+
+        function initThreeJS() {
+            const canvas = document.getElementById('threejs-canvas');
+            const w = canvas.clientWidth;
+            const h = canvas.clientHeight;
+
+            threeRenderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: true });
+            threeRenderer.setSize(w, h);
+            threeRenderer.setPixelRatio(window.devicePixelRatio);
+            threeRenderer.setClearColor(0x0e1117, 1);
+
+            threeScene = new THREE.Scene();
+
+            const aspect = w / h;
+            threeCamera = new THREE.PerspectiveCamera(45, aspect, 0.1, 1000);
+            threeCamera.position.set(0, 0, 28);
+
+            // Ambient light
+            const ambient = new THREE.AmbientLight(0xffffff, 0.1);
+            threeScene.add(ambient);
+
+            // Build orbs
+            const spacingX = 1.6;
+            const spacingY = 1.6;
+            const offsetX = ((COLS - 1) * spacingX) / 2;
+            const offsetY = ((ROWS - 1) * spacingY) / 2;
+
+            const geo = new THREE.SphereGeometry(0.55, 16, 16);
+
+            for (let i = 0; i < NUM_LEDS; i++) {
+                const col = i % COLS;
+                const row = Math.floor(i / COLS);
+                const x = col * spacingX - offsetX;
+                const y = -(row * spacingY - offsetY);
+
+                const mat = new THREE.MeshStandardMaterial({
+                    color: 0x111827,
+                    emissive: 0x000000,
+                    emissiveIntensity: 0,
+                    roughness: 0.3,
+                    metalness: 0.1
+                });
+
+                const mesh = new THREE.Mesh(geo, mat);
+                mesh.position.set(x, y, 0);
+                threeScene.add(mesh);
+                threeOrbs.push(mesh);
+            }
+
+            // Update all orbs with current board state
+            boardColors.forEach((c, i) => updateOrb(i, c));
+
+            threeAnimate();
+        }
+
+        function updateOrb(index, color) {
+            if (!threeOrbs[index]) return;
+            const mat = threeOrbs[index].material;
+            const isLit = color.r > 0 || color.g > 0 || color.b > 0;
+            if (isLit) {
+                const hex = (color.r << 16) | (color.g << 8) | color.b;
+                mat.color.setHex(hex);
+                mat.emissive.setHex(hex);
+                mat.emissiveIntensity = 0.8;
+            } else {
+                mat.color.setHex(0x111827);
+                mat.emissive.setHex(0x000000);
+                mat.emissiveIntensity = 0;
+            }
+        }
+
+        function threeAnimate() {
+            animFrameId = requestAnimationFrame(threeAnimate);
+            threeRenderer.render(threeScene, threeCamera);
+        }
+
+        let toggleCooldown = false;
+        let countdownInterval = null;
+
+        function toggleView() {
+            if (toggleCooldown) return;
+            toggleCooldown = true;
+
+            const btn = document.getElementById('view-toggle');
+            btn.disabled = true;
+            let count = 3;
+            btn.textContent = `⏳ ${count}`;
+
+            countdownInterval = setInterval(() => {
+                count--;
+                if (count <= 0) {
+                    clearInterval(countdownInterval);
+                    toggleCooldown = false;
+                    btn.disabled = false;
+                    btn.textContent = threeActive ? '📹 LIVECAM' : '⬡ 3D VIEW';
+                } else {
+                    btn.textContent = `⏳ ${count}`;
+                }
+            }, 1000);
+
+            const streamImg = document.getElementById('stream-img');
+            const canvas = document.getElementById('threejs-canvas');
+
+            threeActive = !threeActive;
+
+            if (threeActive) {
+                streamImg.style.display = 'none';
+                canvas.style.display = 'block';
+                if (!threeRenderer) {
+                    initThreeJS();
+                } else {
+                    boardColors.forEach((c, i) => updateOrb(i, c));
+                    threeAnimate();
+                }
+            } else {
+                streamImg.style.display = 'block';
+                canvas.style.display = 'none';
+                if (animFrameId) {
+                    cancelAnimationFrame(animFrameId);
+                    animFrameId = null;
+                }
+                reloadStream();
+            }
+        }
+
+        // =====================
+        // HOME BADGE
+        // =====================
         function updateHomeBadge(isHome) {
             if (isHome) {
                 homeBadge.className = 'home-badge home';
@@ -557,13 +729,16 @@
             }
         }
 
+        // =====================
+        // WEBSOCKET
+        // =====================
         function connectWS() {
             ws = new WebSocket(`ws://${location.host}/ws`);
 
             ws.onmessage = (event) => {
                 const data = JSON.parse(event.data);
 
-               if (data.type === 'init') {
+                if (data.type === 'init') {
                     renderBoard(data.board);
                     updateHomeBadge(data.home);
                     if (data.session.active) {
@@ -659,28 +834,48 @@
         }
 
         function renderBoard(board) {
-            board.forEach((color, i) => updateLed(i, color));
+            boardColors = board.map(c => ({...c}));
+            board.forEach((color, i) => {
+                updateLed(i, color);
+                if (threeActive) updateOrb(i, color);
+            });
         }
 
         function updateLed(index, color) {
+            boardColors[index] = {...color};
             const led = grid.children[index];
             if (!led) return;
             const isLit = color.r > 0 || color.g > 0 || color.b > 0;
             led.style.background = isLit ? `rgb(${color.r},${color.g},${color.b})` : '';
             led.style.boxShadow = isLit ? `0 0 6px rgb(${color.r},${color.g},${color.b})` : '';
+            if (threeActive) updateOrb(index, color);
         }
 
-        function clickLed(index) {
-            if (!iAmActive) return;
+        // =====================
+        // TOUCH / DRAG
+        // =====================
+        let isDragging = false;
+        let dragMode = null;
+
+        function getLedAtTouch(touch) {
+            const el = document.elementFromPoint(touch.clientX, touch.clientY);
+            if (el && el.classList.contains('led')) {
+                return Array.from(grid.children).indexOf(el);
+            }
+            return -1;
+        }
+
+        function paintLed(index, forceOff) {
+            if (!iAmActive || index < 0) return;
             const led = grid.children[index];
             const isLit = led.style.background && led.style.background !== '';
-            if (isLit) {
+            if (forceOff === true || dragMode === 'off') {
                 fetch(`/led/${index}`, {
                     method: 'POST',
                     headers: {'Content-Type': 'application/json'},
                     body: JSON.stringify({r: 0, g: 0, b: 0})
                 });
-            } else {
+            } else if (!isLit || dragMode === 'on') {
                 const hex = document.getElementById('color-picker').value;
                 const r = parseInt(hex.slice(1,3), 16);
                 const g = parseInt(hex.slice(3,5), 16);
@@ -692,6 +887,38 @@
                 });
             }
         }
+
+        function clickLed(index) {
+            if (!iAmActive) return;
+            const led = grid.children[index];
+            const isLit = led.style.background && led.style.background !== '';
+            paintLed(index, isLit ? true : false);
+        }
+
+        grid.addEventListener('touchstart', (e) => {
+            if (!iAmActive) return;
+            e.preventDefault();
+            const index = getLedAtTouch(e.touches[0]);
+            if (index >= 0) {
+                const led = grid.children[index];
+                const isLit = led.style.background && led.style.background !== '';
+                dragMode = isLit ? 'off' : 'on';
+                isDragging = true;
+                paintLed(index);
+            }
+        }, { passive: false });
+
+        grid.addEventListener('touchmove', (e) => {
+            if (!iAmActive || !isDragging) return;
+            e.preventDefault();
+            const index = getLedAtTouch(e.touches[0]);
+            if (index >= 0) paintLed(index);
+        }, { passive: false });
+
+        grid.addEventListener('touchend', () => {
+            isDragging = false;
+            dragMode = null;
+        });
 
         function clearBoard() {
             fetch('/clear', { method: 'POST' });
