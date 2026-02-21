@@ -6,6 +6,7 @@ import time
 import json
 import os
 import urllib.request
+import urllib.parse
 
 app = FastAPI()
 app.mount("/static", StaticFiles(directory="static"), name="static")
@@ -16,6 +17,7 @@ SHOUTOUT_FILE = "shoutout.json"
 GUESTBOOK_FILE = "guestbook.json"
 CLAIM_WINDOW = 10
 ADMIN_PASSWORD = "litebrite123"
+NTFY_TOPIC = "theledboard-notify"
 
 def load_board():
     if os.path.exists(BOARD_FILE):
@@ -141,6 +143,19 @@ async def end_session(reason: str):
     session["claim_window_end"] = time.time() + CLAIM_WINDOW
     await broadcast({"type": "session_end", "reason": reason})
     await broadcast({"type": "claim_window", "seconds": CLAIM_WINDOW})
+    try:
+        mins = duration // 60
+        secs = duration % 60
+        duration_str = f"{mins}m {secs}s" if mins > 0 else f"{secs}s"
+        msg = f"{name} just finished drawing on The LED Board! (drew for {duration_str})"
+        req = urllib.request.Request(
+            f"https://ntfy.sh/{NTFY_TOPIC}",
+            data=msg.encode("utf-8"),
+            headers={"Title": "New artwork on The LED Board!", "Priority": "default"}
+        )
+        urllib.request.urlopen(req, timeout=5)
+    except:
+        pass
 
 async def session_timer():
     while True:
@@ -227,6 +242,19 @@ async def post_guestbook(payload: dict, request: Request):
 async def get_guestbook():
     return guestbook
 
+@app.get("/test-notify")
+async def test_notify():
+    try:
+        req = urllib.request.Request(
+            f"https://ntfy.sh/{NTFY_TOPIC}",
+            data="Test notification from The LED Board!".encode("utf-8"),
+            headers={"Title": "Test!", "Priority": "default"}
+        )
+        urllib.request.urlopen(req, timeout=5)
+        return {"status": "ok"}
+    except Exception as e:
+        return {"status": "error", "detail": str(e)}
+    
 @app.post("/shoutout")
 async def post_shoutout(payload: dict):
     shoutout["name"] = payload.get("name", "Anonymous")
