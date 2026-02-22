@@ -579,11 +579,15 @@
                 const hex = (color.r << 16) | (color.g << 8) | color.b;
                 mat.color.setHex(hex);
                 mat.emissive.setHex(hex);
-                mat.emissiveIntensity = 0.8;
+                mat.emissiveIntensity = 1.5;
+                mat.roughness = 0.1;
+                mat.metalness = 0.0;
             } else {
-                mat.color.setHex(0x111111);
+                mat.color.setHex(0x1a1a2e);
                 mat.emissive.setHex(0x000000);
                 mat.emissiveIntensity = 0;
+                mat.roughness = 0.3;
+                mat.metalness = 0.2;
             }
         }
 
@@ -596,7 +600,7 @@
             threeRenderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: true });
             threeRenderer.setSize(w, h);
             threeRenderer.setPixelRatio(window.devicePixelRatio);
-            threeRenderer.setClearColor(0x9ca3af, 1);
+            threeRenderer.setClearColor(0x0e1117, 1);
             threeRenderer.shadowMap.enabled = true;
 
             threeScene = new THREE.Scene();
@@ -607,11 +611,24 @@
             threeCamera.lookAt(0, 0, 0);
 
             // Lighting
-            const ambient = new THREE.AmbientLight(0xffffff, 0.6);
+            const ambient = new THREE.AmbientLight(0xffffff, 0.3);
             threeScene.add(ambient);
-            const dirLight = new THREE.DirectionalLight(0xffffff, 0.8);
-            dirLight.position.set(1, 1, 1);
-            threeScene.add(dirLight);
+
+            // Key light - warm from above
+            const keyLight = new THREE.DirectionalLight(0xfff0cc, 1.2);
+            keyLight.position.set(2, 3, 2);
+            keyLight.castShadow = true;
+            threeScene.add(keyLight);
+
+            // Rim light - cool blue from behind
+            const rimLight = new THREE.DirectionalLight(0x4fd1c5, 0.8);
+            rimLight.position.set(-2, -1, -2);
+            threeScene.add(rimLight);
+
+            // Fill light - soft from below
+            const fillLight = new THREE.DirectionalLight(0xf6ad55, 0.4);
+            fillLight.position.set(0, -2, 1);
+            threeScene.add(fillLight);
 
             // Load GLB model
             const loader = new THREE.GLTFLoader();
