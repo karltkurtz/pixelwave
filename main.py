@@ -239,6 +239,13 @@ async def post_guestbook(payload: dict, request: Request):
     if len(guestbook) > 100:
         guestbook.pop()
     save_guestbook()
+    try:
+        notif_url = "https://ntfy.sh/pigarage-guestbook"
+        notif_data = f"{name} from {location} signed the guestbook: {message}"
+        req = urllib.request.Request(notif_url, data=notif_data.encode(), method="POST")
+        urllib.request.urlopen(req, timeout=3)
+    except:
+        pass
     return {"status": "ok"}
 
 @app.get("/guestbook/entries")
