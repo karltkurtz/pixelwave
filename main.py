@@ -207,6 +207,7 @@ async def root(request: Request):
     if ip not in visitors["unique_ips"]:
         visitors["unique_ips"].append(ip)
     save_visitors()
+    await broadcast({"type": "visitor_count", "total": visitors["total"], "unique": len(visitors["unique_ips"])})
     with open("static/index.html") as f:
         content = f.read()
     return HTMLResponse(content, headers={
