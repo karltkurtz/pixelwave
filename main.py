@@ -51,6 +51,21 @@ def save_guestbook():
 
 board_state = load_board()
 
+# Visitor tracking
+VISITORS_FILE = "visitors.json"
+
+def load_visitors():
+    if os.path.exists(VISITORS_FILE):
+        with open(VISITORS_FILE) as f:
+            return json.load(f)
+    return {"total": 0, "unique_ips": []}
+
+def save_visitors():
+    with open(VISITORS_FILE, "w") as f:
+        json.dump(visitors, f)
+
+visitors = load_visitors()
+
 session = {
     "active": False,
     "user_id": None,
@@ -186,13 +201,25 @@ async def startup_event():
     asyncio.create_task(session_timer())
 
 @app.get("/")
-async def root():
+async def root(request: Request):
+    ip = request.headers.get("x-forwarded-for", request.client.host)
+    visitors["total"] += 1
+    if ip not in visitors["unique_ips"]:
+        visitors["unique_ips"].append(ip)
+    save_visitors()
     with open("static/index.html") as f:
         content = f.read()
     return HTMLResponse(content, headers={
         "Cache-Control": "no-store, no-cache, must-revalidate",
         "Pragma": "no-cache"
     })
+
+@app.get("/visitors")
+async def get_visitors():
+    return {
+        "total": visitors["total"],
+        "unique": len(visitors["unique_ips"])
+    }
 
 @app.get("/donate")
 async def donate():
