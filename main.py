@@ -66,6 +66,9 @@ def save_visitors():
 
 visitors = load_visitors()
 
+anim_task = None
+anim_running = False
+
 session = {
     "active": False,
     "user_id": None,
@@ -147,8 +150,31 @@ async def broadcast(message: dict):
             disconnected.add(client)
     clients.difference_update(disconnected)
 
-async def end_session(reason: str):
+async def run_server_anim():
+    global anim_running
+    offset = 0
+    while anim_running:
+        for i in range(NUM_LEDS):
+            hue = ((i / NUM_LEDS) * 360 + offset) % 360
+            r, g, b = hsl_to_rgb(hue / 360)
+            board_state[i] = {"r": r, "g": g, "b": b}
+            set_physical_led(i, r, g, b)
+        await broadcast({"type": "clear"})
+        await broadcast({"type": "init", "board": board_state, "session": {"active": False}, "home": home_status["home"], "last_session": session_history[-1] if session_history else None, "shoutout": shoutout if shoutout["name"] else None})
+        offset = (offset + 10) % 360
+        await asyncio.sleep(0.15)
+
+def hsl_to_rgb(h):
+    import colorsys
+    r, g, b = colorsys.hls_to_rgb(h, 0.5, 1.0)
+    return int(r * 255), int(g * 255), int(b * 255)    
+
+async def end_session(reason: str, keep_anim: bool = False):
+    global anim_task, anim_running
     duration = int(time.time() - session["start_time"]) if session["start_time"] else 0
+    if keep_anim:
+        anim_running = True
+        anim_task = asyncio.create_task(run_server_anim())
     name = session.get("artist_name", "Anonymous")
     save_session(duration, list(board_state), name, session.get("location", "Unknown"))
     await broadcast({"type": "last_session", "ended_at": session_history[-1]["ended_at"], "duration": duration, "name": name, "location": session_history[-1].get("location", "Unknown")})
@@ -332,6 +358,11 @@ async def websocket_endpoint(websocket: WebSocket):
 
             if data["type"] == "claim":
                 if not session["active"] and not session["claim_window"]:
+                    global anim_task, anim_running
+                    anim_running = False
+                    if anim_task:
+                        anim_task.cancel()
+                        anim_task = None
                     session["active"] = True
                     session["user_id"] = user_id
                     session["start_time"] = time.time()
@@ -359,7 +390,8 @@ async def websocket_endpoint(websocket: WebSocket):
 
             elif data["type"] == "finish":
                 if session["user_id"] == user_id:
-                    await end_session("finished")
+                    keep = data.get("keep_anim", False)
+                    await end_session("finished", keep_anim=keep)
 
     except WebSocketDisconnect:
         clients.discard(websocket)

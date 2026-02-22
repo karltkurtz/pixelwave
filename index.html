@@ -375,6 +375,10 @@
         }
 
         .btn-finish { background: var(--coral); color: #1a1a2e; }
+        .btn-anim { background: rgba(104,211,145,0.1); color: var(--green); border: 1px solid rgba(104,211,145,0.3); }
+        .btn-anim.active { background: rgba(104,211,145,0.3); box-shadow: 0 0 12px rgba(104,211,145,0.5); }
+        .btn-surprise { background: rgba(246,173,85,0.1); color: var(--amber); border: 1px solid rgba(246,173,85,0.3); }
+        .btn-surprise:hover { box-shadow: 0 0 12px rgba(246,173,85,0.3); }
         .btn-clear { background: var(--surface); color: var(--text); border: 1px solid var(--border); }
 
         .btn-view {
@@ -523,6 +527,8 @@
                 </div>
                 <button class="btn btn-clear" onclick="clearBoard()">CLEAR</button>
                 <button class="btn btn-finish" onclick="finish()">DONE</button>
+                <button class="btn btn-anim" id="anim-btn" onclick="toggleAnim()">ANIMATE</button>
+                <button class="btn btn-surprise" onclick="surpriseMe()">🎲 SURPRISE</button>
             </div>
         </div>
 
@@ -858,8 +864,11 @@
                 }
                 else if (data.type === 'session_end') {
                     iAmActive = false;
+                    if (animRunning) {
+                        clearInterval(animInterval);
+                        animInterval = null;
+                    }
                     userControls.style.display = 'none';
-                    timerEl.textContent = '';
                     claimBtn.disabled = true;
                     claimBtn.style.opacity = '0.3';
                     claimBtn.textContent = 'BOARD IN USE';
@@ -964,7 +973,7 @@
         }
 
         function paintLed(index, forceOff) {
-            if (!iAmActive || index < 0) return;
+            if (!iAmActive || animRunning || index < 0) return;
             const led = grid.children[index];
             const isLit = led.style.background && led.style.background !== '';
             if (forceOff === true || dragMode === 'off') {
@@ -987,7 +996,7 @@
         }
 
         function clickLed(index) {
-            if (!iAmActive) return;
+            if (!iAmActive || animRunning) return;
             const led = grid.children[index];
             const isLit = led.style.background && led.style.background !== '';
             paintLed(index, isLit ? true : false);
@@ -1018,13 +1027,120 @@
             dragMode = null;
         });
 
+        let animInterval = null;
+let animRunning = false;
+
+function toggleAnim() {
+    const btn = document.getElementById('anim-btn');
+    if (animRunning) {
+        stopAnim();
+    } else {
+        startAnim();
+    }
+}
+
+function startAnim() {
+    animRunning = true;
+    const btn = document.getElementById('anim-btn');
+    btn.textContent = 'STOP ANIM';
+    btn.classList.add('active');
+    document.getElementById('color-picker').disabled = true;
+    let offset = 0;
+    animInterval = setInterval(() => {
+        for (let i = 0; i < NUM_LEDS; i++) {
+            const hue = ((i / NUM_LEDS) * 360 + offset) % 360;
+            const {r, g, b} = hslToRgb(hue, 1, 0.5);
+            fetch(`/led/${i}`, {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({r, g, b})
+            });
+        }
+        offset = (offset + 10) % 360;
+    }, 150);
+}
+
+function stopAnim() {
+    animRunning = false;
+    clearInterval(animInterval);
+    animInterval = null;
+    const btn = document.getElementById('anim-btn');
+    btn.textContent = 'ANIMATE';
+    btn.classList.remove('active');
+    document.getElementById('color-picker').disabled = false;
+    fetch('/clear', { method: 'POST' });
+}
+
+function hslToRgb(h, s, l) {
+    h /= 360;
+    const a = s * Math.min(l, 1 - l);
+    const f = n => {
+        const k = (n + h * 12) % 12;
+        return l - a * Math.max(-1, Math.min(k - 3, 9 - k, 1));
+    };
+    return { r: Math.round(f(0) * 255), g: Math.round(f(8) * 255), b: Math.round(f(4) * 255) };
+}
+
+        function randomColor() {
+            return {
+                r: Math.floor(Math.random() * 256),
+                g: Math.floor(Math.random() * 256),
+                b: Math.floor(Math.random() * 256)
+            };
+        }
+
+        function surpriseMe() {
+            if (!iAmActive || animRunning) return;
+            const pattern = Math.floor(Math.random() * 5);
+            const colors = [];
+
+            if (pattern === 0) {
+                for (let i = 0; i < NUM_LEDS; i++) colors.push(randomColor());
+            } else if (pattern === 1) {
+                const c1 = randomColor(), c2 = randomColor();
+                const stripeWidth = Math.ceil(NUM_LEDS / (2 + Math.floor(Math.random() * 4)));
+                for (let i = 0; i < NUM_LEDS; i++) colors.push(Math.floor(i / stripeWidth) % 2 === 0 ? c1 : c2);
+            } else if (pattern === 2) {
+                const c1 = randomColor(), c2 = randomColor();
+                for (let i = 0; i < NUM_LEDS; i++) {
+                    const t = i / (NUM_LEDS - 1);
+                    colors.push({
+                        r: Math.round(c1.r + (c2.r - c1.r) * t),
+                        g: Math.round(c1.g + (c2.g - c1.g) * t),
+                        b: Math.round(c1.b + (c2.b - c1.b) * t)
+                    });
+                }
+            } else if (pattern === 3) {
+                const c1 = randomColor(), c2 = randomColor();
+                for (let i = 0; i < NUM_LEDS; i++) colors.push(i % 2 === 0 ? c1 : c2);
+            } else {
+                const c1 = randomColor(), c2 = randomColor(), c3 = randomColor();
+                const third = Math.floor(NUM_LEDS / 3);
+                for (let i = 0; i < NUM_LEDS; i++) {
+                    if (i < third) colors.push(c1);
+                    else if (i < third * 2) colors.push(c2);
+                    else colors.push(c3);
+                }
+            }
+
+            colors.forEach((color, i) => {
+                fetch(`/led/${i}`, {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify(color)
+                });
+            });
+        }
+
         function clearBoard() {
             fetch('/clear', { method: 'POST' });
         }
 
         function finish() {
             if (confirm('Done already? Your art will stay on the board for the next visitor.')) {
-                ws.send(JSON.stringify({type: 'finish'}));
+                const keeping = animRunning;
+                ws.send(JSON.stringify({type: 'finish', keep_anim: keeping}));
+                if (!keeping) stopAnim();
             }
         }
 
