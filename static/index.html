@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>The LED Board</title>
+    <title>Pi Garage</title>
     <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Nunito:wght@400;600;700&display=swap" rel="stylesheet">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/loaders/GLTFLoader.js"></script>
@@ -310,6 +310,7 @@
             font-size: 12px;
             color: var(--muted);
             font-weight: 600;
+            margin-bottom: 16px;
         }
 
         .shoutout-bar span { color: var(--green); }
@@ -324,7 +325,7 @@
         }
 
         .name-wrap {
-            width: 50%;
+            width: 60%;
             margin-bottom: 0;
         }
 
@@ -464,7 +465,7 @@
     <div id="bg-layer"></div>
 
     <div class="header">
-        <div class="logo">The LED <span>Board</span></div>
+        <div class="logo">Pi <span>Garage</span></div>
         <div class="home-badge away" id="home-badge">
             <div class="dot"></div>
             <span id="home-text">KARL IS AWAY</span>
@@ -476,10 +477,14 @@
         <p class="signature">— Karl</p>
     </div>
 
-    <div class="action-buttons">
+   <div class="action-buttons">
         <a class="action-btn guestbook-btn" href="/guestbook">📖 Guestbook</a>
         <a class="action-btn email-btn" href="mailto:karltkurtz@gmail.com">✉️ Email Karl</a>
         <a class="action-btn venmo-btn" href="/donate">💸 Donate to keep this page alive</a>
+    </div>
+
+    <div class="shoutout-bar" id="shoutout-bar" style="display:none;">
+        🎉 Shoutout to <span id="shoutout-name"></span> for the <span id="shoutout-amount"></span> donation!
     </div>
 
     <div class="content">
@@ -492,8 +497,8 @@
             </div>
         </div>
 
-        <div class="shoutout-bar" id="shoutout-bar" style="display:none;">
-            🎉 Shoutout to <span id="shoutout-name"></span> for the <span id="shoutout-amount"></span> donation!
+        <div class="last-session-bar" id="last-session-bar" style="display:none;">
+            ✏️ Last drawing: <span id="last-session-time"></span>
         </div>
 
         <div class="status-bar">
@@ -505,15 +510,11 @@
             <div id="timer"></div>
         </div>
 
-        <div class="last-session-bar" id="last-session-bar" style="display:none;">
-            ✏️ Last drawing: <span id="last-session-time"></span>
-        </div>
-
         <div class="controls-bar">
             <div class="name-wrap" id="name-wrap">
-                <input type="text" id="artist-name" maxlength="24" placeholder="Sign your work — what's your name? ✏️" />
+                <input type="text" id="artist-name" maxlength="24" placeholder="FIRST, sign your work — what's your name?" />
             </div>
-            <button class="btn btn-claim" id="claim-btn" onclick="claim()">CLAIM</button>
+            <button class="btn btn-claim" id="claim-btn" onclick="claim()">USE THE BOARD</button>
             <button class="btn btn-view" id="view-toggle" onclick="toggleView()">⬡ 3D VIEW</button>
             <div id="user-controls">
                 <div class="color-wrap">
@@ -840,7 +841,7 @@
                     timerEl.textContent = '';
                     claimBtn.disabled = true;
                     claimBtn.style.opacity = '0.3';
-                    claimBtn.textContent = 'IN USE';
+                    claimBtn.textContent = 'BOARD IN USE';
                     messageEl.textContent = data.reason === 'timeout' ? 'Session timed out.' : 'Current user is finished.';
                     statusEl.textContent = 'Waiting for board to open...';
                 }
@@ -874,7 +875,7 @@
                 }
             };
 
-            ws.onopen = () => statusEl.textContent = 'Board is free — claim it!';
+            ws.onopen = () => statusEl.textContent = 'Board is free — Use it!';
             ws.onclose = () => {
                 statusEl.textContent = 'Reconnecting...';
                 setTimeout(connectWS, 2000);
@@ -884,7 +885,7 @@
         function setSessionActive(youAreInControl) {
             claimBtn.disabled = true;
             claimBtn.style.opacity = '0.3';
-            claimBtn.textContent = 'IN USE';
+            claimBtn.textContent = 'BOARD IN USE';
             if (youAreInControl) {
                 userControls.style.display = 'flex';
                 statusEl.textContent = 'You have control!';
@@ -900,8 +901,8 @@
             timerEl.textContent = '';
             claimBtn.disabled = false;
             claimBtn.style.opacity = '1';
-            claimBtn.textContent = 'CLAIM';
-            statusEl.textContent = 'Board is free — claim it!';
+            claimBtn.textContent = 'USE THE BOARD';
+            statusEl.textContent = 'Board is free — Use it!';
             document.getElementById('name-wrap').style.display = 'block';
         }
 
