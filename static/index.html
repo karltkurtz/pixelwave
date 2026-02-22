@@ -1138,9 +1138,7 @@ function hslToRgb(h, s, l) {
 
         function finish() {
             if (confirm('Done already? Your art will stay on the board for the next visitor.')) {
-                const keeping = animRunning;
-                ws.send(JSON.stringify({type: 'finish', keep_anim: keeping}));
-                if (!keeping) stopAnim();
+                ws.send(JSON.stringify({type: 'finish'}));
             }
         }
 
