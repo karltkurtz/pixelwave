@@ -289,7 +289,7 @@
     <div id="bg-layer"></div>
 
     <div class="header">
-        <a class="logo" href="/">The LED <span>Board</span></a>
+        <a class="logo" href="/">Pi <span>Garage</span></a>
         <a class="back-link" href="/">← Back to the board</a>
     </div>
 
@@ -303,7 +303,7 @@
         <div class="expenses">
             <div class="expenses-title">// WHAT YOUR DONATION COVERS</div>
             <div class="expense-item">
-                <span>Domain (theledboard.com)</span>
+                <span>Domain (pigarage.com)</span>
                 <span class="cost">~$12/yr</span>
             </div>
             <div class="expense-item">
@@ -343,6 +343,19 @@
                     <span class="emoji">💸</span>CUSTOM AMOUNT
                 </a>
             </div>
+        </div>
+
+        <div class="expenses" style="margin-top: 24px;">
+            <div class="expenses-title">// DONATE WITH BITCOIN</div>
+            <div style="padding: 12px 0; font-size: 13px; font-weight: 600; color: var(--muted); line-height: 1.8;">
+                Send BTC to the address below:
+            </div>
+            <div style="background: rgba(0,0,0,0.2); border: 1px solid var(--border); border-radius: 8px; padding: 12px; font-family: monospace; font-size: 12px; color: var(--amber); word-break: break-all;">
+                bc1q7ynxpe02ye62x5wyv7mm83graqwk6czvjdnqnt
+            </div>
+            <button onclick="navigator.clipboard.writeText('bc1q7ynxpe02ye62x5wyv7mm83graqwk6czvjdnqnt').then(() => this.textContent = '✓ COPIED!')" style="margin-top: 10px; font-family: 'Press Start 2P', monospace; font-size: 7px; padding: 10px 16px; border-radius: 6px; border: 1px solid rgba(246,173,85,0.3); background: rgba(246,173,85,0.08); color: var(--amber); cursor: pointer; letter-spacing: 0.5px;">
+                COPY ADDRESS
+            </button>
         </div>
 
         <div class="confirm-section" id="confirm-section">
