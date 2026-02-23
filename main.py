@@ -190,16 +190,17 @@ async def end_session(reason: str, keep_anim: bool = False):
     name = session.get("artist_name", "Anonymous")
     location = session.get("location", "Unknown")
     save_session(duration, list(board_state), name, location)
-    artwork_history.insert(0, {
-        "board": list(board_state),
-        "name": name,
-        "location": location,
-        "time": time.time(),
-        "duration": duration
-    })
-    if len(artwork_history) > 10:
-        artwork_history.pop()
-    save_artwork()
+    if any(c["r"] > 0 or c["g"] > 0 or c["b"] > 0 for c in board_state):
+        artwork_history.insert(0, {
+            "board": list(board_state),
+            "name": name,
+            "location": location,
+            "time": time.time(),
+            "duration": duration
+        })
+        if len(artwork_history) > 10:
+            artwork_history.pop()
+        save_artwork()
     await broadcast({"type": "last_session", "ended_at": session_history[-1]["ended_at"], "duration": duration, "name": name, "location": session_history[-1].get("location", "Unknown")})
     session["active"] = False
     session["user_id"] = None
