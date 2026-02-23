@@ -546,7 +546,12 @@
                     <input type="text" id="overlay-artist-name" maxlength="24" placeholder="FIRST, sign your work — what's your name?" />
                 </div>
                 <button class="btn btn-claim" id="overlay-claim-btn" onclick="claim()">USE THE BOARD</button>
-                <button class="btn btn-view" id="view-toggle" onclick="toggleView()">⬡ 3D VIEW</button>
+                <button class="btn btn-view" id="view-toggle" onclick="showUnderConstruction()" style="opacity:0.3;">⬡ 3D VIEW</button>
+                <div id="construction-popup" style="display:none; position:fixed; top:50%; left:50%; transform:translate(-50%,-50%); background:var(--surface); border:1px solid var(--border); border-radius:12px; padding:24px; z-index:2000; text-align:center; max-width:280px; box-shadow:0 8px 32px rgba(0,0,0,0.5);">
+                    <div style="font-family:'Press Start 2P',monospace; font-size:8px; color:var(--amber); margin-bottom:12px; letter-spacing:1px;">🚧 UNDER CONSTRUCTION</div>
+                    <div style="font-size:13px; color:var(--muted); font-weight:600; margin-bottom:16px; line-height:1.7;">The 3D view is being reworked and will be back soon!</div>
+                    <button onclick="document.getElementById('construction-popup').style.display='none'" style="font-family:'Press Start 2P',monospace; font-size:7px; padding:8px 14px; border-radius:6px; background:rgba(79,209,197,0.1); color:var(--teal); border:1px solid rgba(79,209,197,0.3); cursor:pointer;">✕ CLOSE</button>
+                </div>
                 <div id="user-controls" style="display:none; align-items:center; gap:12px; flex-wrap:wrap;">
                     <div class="color-wrap">
                         <span>COLOR</span>
@@ -858,6 +863,9 @@
         // =====================
         // WEBSOCKET
         // =====================
+        function showUnderConstruction() {
+            document.getElementById('construction-popup').style.display = 'block';
+        }
         function openOverlay() {
             const overlay = document.getElementById('draw-overlay');
             overlay.style.display = 'flex';
@@ -961,6 +969,7 @@
             claimBtn.disabled = true;
             claimBtn.style.opacity = '0.3';
             claimBtn.textContent = 'BOARD IN USE';
+        
             if (youAreInControl) {
                 userControls.style.display = 'flex';
                 statusEl2.textContent = 'You have control!';
@@ -977,6 +986,7 @@
             claimBtn.disabled = false;
             claimBtn.style.opacity = '1';
             claimBtn.textContent = 'USE THE BOARD';
+            
             statusEl.textContent = 'Board is free — Use it!';
             statusEl2.textContent = 'Board is free — Use it!';
             document.getElementById('overlay-name-wrap').style.display = 'block';
