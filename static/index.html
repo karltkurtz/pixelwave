@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Pi Garage</title>
+    <title>PixelWave</title>
     <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Nunito:wght@400;600;700&display=swap" rel="stylesheet">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/loaders/GLTFLoader.js"></script>
@@ -469,7 +469,7 @@
     <div id="bg-layer"></div>
 
     <div class="header">
-        <div class="logo">Pi <span>Garage</span></div>
+        <div class="logo">Pixel<span>Wave</span></div>
         <div class="home-badge away" id="home-badge">
             <div class="dot"></div>
             <span id="home-text">KARL IS AWAY</span>
@@ -482,13 +482,13 @@
 
     <div class="sticky-note">
         <p>Hey! I've got a real LED board sitting in my house. Draw something on it for me to find when I get home. 👋</p>
-        <p class="signature">— Karl</p>
+        <!--<p class="signature">— Karl</p>-->
     </div>
 
    <div class="action-buttons">
         <a class="action-btn guestbook-btn" href="/guestbook">📖 Guestbook</a>
         <a class="action-btn guestbook-btn" href="/about">💡 About</a>
-        <a class="action-btn email-btn" href="mailto:karltkurtz@gmail.com">✉️ Email Karl</a>
+        <a class="action-btn email-btn" href="mailto:karltkurtz@gmail.com">✉️ Email Me</a>
         <a class="action-btn venmo-btn" href="/donate">💸 Donate to keep this page alive</a>
     </div>
 
@@ -848,10 +848,10 @@
         function updateHomeBadge(isHome) {
             if (isHome) {
                 homeBadge.className = 'home-badge home';
-                homeText.textContent = 'KARL IS HOME';
+                homeText.textContent = 'I AM HOME';
             } else {
                 homeBadge.className = 'home-badge away';
-                homeText.textContent = 'KARL IS AWAY';
+                homeText.textContent = 'I AM AWAY';
             }
         }
 

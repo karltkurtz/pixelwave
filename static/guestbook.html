@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Guestbook — The LED Board</title>
+    <title>Guestbook — PixelWave</title>
     <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Nunito:wght@400;600;700&display=swap" rel="stylesheet">
     <style>
         :root {
@@ -243,14 +243,30 @@
             font-weight: 600;
             margin-bottom: 6px;
         }
+
+        .back-btn {
+            font-family: 'Press Start 2P', monospace;
+            font-size: 7px;
+            padding: 10px 16px;
+            border-radius: 8px;
+            text-decoration: none;
+            color: var(--teal);
+            background: rgba(79,209,197,0.1);
+            border: 1px solid rgba(79,209,197,0.3);
+            letter-spacing: 0.5px;
+            display: inline-block;
+        }
+
+        .back-btn:hover { box-shadow: 0 0 12px rgba(79,209,197,0.3); }
+        
     </style>
 </head>
 <body>
     <div id="bg-layer"></div>
 
     <div class="header">
-        <a class="logo" href="/">The LED <span>Board</span></a>
-        <a class="back-link" href="/">← Back to the board</a>
+        <a class="logo" href="/">Pixel<span>Wave</span></a>
+        <a class="back-btn" href="/">← BACK TO BOARD</a>
     </div>
 
     <div class="page-content">
