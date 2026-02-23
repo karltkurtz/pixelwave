@@ -1414,6 +1414,25 @@ function hslToRgb(h, s, l) {
 
         function surpriseMe() {
             if (!iAmActive || animRunning) return;
+            const btn = Array.from(document.querySelectorAll('.btn-surprise')).find(b => b.textContent.includes('SURPRISE'));
+            const originalWidth = btn.offsetWidth;
+            btn.style.width = originalWidth + 'px';
+            btn.disabled = true;
+            btn.style.opacity = '0.4';
+            let count = 3;
+            btn.textContent = `🎲 ${count}`;
+            const cd = setInterval(() => {
+                count--;
+                if (count <= 0) {
+                    clearInterval(cd);
+                    btn.disabled = false;
+                    btn.style.opacity = '1';
+                    btn.textContent = '🎲 SURPRISE';
+                    btn.style.width = '';
+                } else {
+                    btn.textContent = `🎲 ${count}`;
+                }
+            }, 1000);
             const pattern = Math.floor(Math.random() * 5);
             const colors = [];
 
