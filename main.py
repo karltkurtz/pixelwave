@@ -365,6 +365,10 @@ async def test_notify():
     except Exception as e:
         return {"status": "error", "detail": str(e)}
     
+@app.get("/shoutout/latest")
+async def get_shoutout():
+    return shoutout if shoutout["name"] else {}
+    
 @app.post("/shoutout")
 async def post_shoutout(payload: dict):
     shoutout["name"] = payload.get("name", "Anonymous")

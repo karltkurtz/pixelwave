@@ -293,6 +293,10 @@
         <a class="back-link" href="/">← Back to the board</a>
     </div>
 
+    <div id="shoutout-bar" style="display:none; width:100%; max-width:480px; background:var(--surface); border:1px solid rgba(104,211,145,0.3); border-radius:10px; padding:10px 16px; font-size:12px; color:var(--muted); font-weight:600; margin-bottom:16px;">
+        🎉 Shoutout to <span id="shoutout-name" style="color:var(--green);"></span> for the <span id="shoutout-amount" style="color:var(--green);"></span> donation!
+    </div>
+
     <div class="donate-card">
         <div class="donate-title">Keep the lights on 💡</div>
         <div class="donate-desc">
@@ -410,6 +414,17 @@
                 alert('Something went wrong. Please try again.');
             });
         }
+
+        fetch('/shoutout/latest')
+            .then(r => r.json())
+            .then(data => {
+                if (data && data.name) {
+                    document.getElementById('shoutout-name').textContent = data.name;
+                    document.getElementById('shoutout-amount').textContent = data.label;
+                    document.getElementById('shoutout-bar').style.display = 'block';
+                }
+            });
+
     </script>
 </body>
 </html>
