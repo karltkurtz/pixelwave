@@ -519,29 +519,7 @@
             </div>
             <div id="timer"></div>
         </div>
-
-        <div class="controls-bar">
-            <div class="name-wrap" id="name-wrap">
-                <input type="text" id="artist-name" maxlength="24" placeholder="FIRST, sign your work — what's your name?" />
-            </div>
-            <button class="btn btn-claim" id="claim-btn" onclick="claim()">USE THE BOARD</button>
-            <button class="btn btn-view" id="view-toggle" onclick="toggleView()">⬡ 3D VIEW</button>
-            <div id="user-controls">
-                <div class="color-wrap">
-                    <span>COLOR</span>
-                    <input type="color" id="color-picker" value="#ff0000">
-                </div>
-                <button class="btn btn-clear" onclick="clearBoard()">CLEAR</button>
-                <button class="btn btn-finish" onclick="finish()">DONE</button>
-                <button class="btn btn-anim" id="anim-btn" onclick="toggleAnim()">ANIMATE</button>
-                <button class="btn btn-surprise" onclick="surpriseMe()">🎲 SURPRISE</button>
-            </div>
-        </div>
-
-        <div class="grid-container">
-            <div class="grid-label">// LED STRIP — CLICK TO DRAW</div>
-            <div id="led-grid"></div>
-        </div>
+        <button class="btn btn-claim" id="claim-btn" onclick="openOverlay()" style="width:100%;">USE THE BOARD</button>
 
     </div>
 
@@ -549,19 +527,65 @@
         <div id="visitor-counter"></div>
     </footer>
 
+    <!-- DRAWING OVERLAY -->
+    <div id="draw-overlay" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:#0e1117; z-index:1000; overflow-y:auto; padding:24px 16px 48px; flex-direction:column; align-items:center;">
+        <div style="width:100%; max-width:560px; display:flex; flex-direction:column; gap:20px;">
+            <div style="display:flex; justify-content:space-between; align-items:center;">
+                <div style="font-family:'Press Start 2P',monospace; font-size:10px; color:var(--amber); letter-spacing:1px;">// DRAW</div>
+                <button onclick="closeOverlay()" style="font-family:'Press Start 2P',monospace; font-size:7px; padding:8px 12px; border-radius:6px; background:rgba(255,255,255,0.05); color:var(--muted); border:1px solid var(--border); cursor:pointer;">✕ CLOSE</button>
+            </div>
+
+            <div class="status-bar">
+                <div>
+                    <div id="overlay-status">Enter your name to claim the board</div>
+                    <div id="overlay-message"></div>
+                    <div id="overlay-claim-window"></div>
+                </div>
+                <div id="overlay-timer"></div>
+            </div>
+
+            <div class="controls-bar">
+                <div class="name-wrap" id="overlay-name-wrap">
+                    <input type="text" id="overlay-artist-name" maxlength="24" placeholder="FIRST, sign your work — what's your name?" />
+                </div>
+                <button class="btn btn-claim" id="overlay-claim-btn" onclick="claim()">USE THE BOARD</button>
+                <button class="btn btn-view" id="view-toggle" onclick="toggleView()">⬡ 3D VIEW</button>
+                <div id="user-controls" style="display:none; align-items:center; gap:12px; flex-wrap:wrap;">
+                    <div class="color-wrap">
+                        <span>COLOR</span>
+                        <input type="color" id="color-picker" value="#ff0000">
+                    </div>
+                    <button class="btn btn-clear" onclick="clearBoard()">CLEAR</button>
+                    <button class="btn btn-finish" onclick="finish()">DONE</button>
+                    <button class="btn btn-anim" id="anim-btn" onclick="toggleAnim()">ANIMATE</button>
+                    <button class="btn btn-surprise" onclick="surpriseMe()">🎲 SURPRISE</button>
+                </div>
+            </div>
+
+            <div class="grid-container">
+                <div class="grid-label">// LED STRIP — CLICK TO DRAW</div>
+                <div id="led-grid"></div>
+            </div>
+        </div>
+    </div>
+
     <script>
         const NUM_LEDS = 32;
         const COLS = 32;
         const ROWS = 1;
         const grid = document.getElementById('led-grid');
         const statusEl = document.getElementById('status');
-        const timerEl = document.getElementById('timer');
-        const messageEl = document.getElementById('message');
-        const claimWindowEl = document.getElementById('claim-window');
-        const claimBtn = document.getElementById('claim-btn');
+        const claimBtn = document.getElementById('overlay-claim-btn');
         const userControls = document.getElementById('user-controls');
         const homeBadge = document.getElementById('home-badge');
         const homeText = document.getElementById('home-text');
+        const statusEl2 = document.getElementById('overlay-status');
+        const timerEl2 = document.getElementById('overlay-timer');
+        const messageEl2 = document.getElementById('overlay-message');
+        const claimWindowEl2 = document.getElementById('overlay-claim-window');
+        const timerEl = timerEl2;
+        const messageEl = messageEl2;
+        const claimWindowEl = claimWindowEl2;
         let iAmActive = false;
         let ws = null;
         let boardColors = new Array(NUM_LEDS).fill({r:0,g:0,b:0});
@@ -837,6 +861,16 @@
         // =====================
         // WEBSOCKET
         // =====================
+        function openOverlay() {
+            const overlay = document.getElementById('draw-overlay');
+            overlay.style.display = 'flex';
+        }
+
+        function closeOverlay() {
+            if (iAmActive) return;
+            const overlay = document.getElementById('draw-overlay');
+            overlay.style.display = 'none';
+        }
         function connectWS() {
             const wsProtocol = location.protocol === 'https:' ? 'wss:' : 'ws:';
             ws = new WebSocket(`${wsProtocol}//${location.host}/ws`);
@@ -928,14 +962,14 @@
             claimBtn.textContent = 'BOARD IN USE';
             if (youAreInControl) {
                 userControls.style.display = 'flex';
-                statusEl.textContent = 'You have control!';
+                statusEl2.textContent = 'You have control!';
             } else {
                 userControls.style.display = 'none';
-                statusEl.textContent = 'Board is in use.';
+                statusEl2.textContent = 'Board is in use.';
             }
         }
 
-        function setSessionIdle() {
+       function setSessionIdle() {
             iAmActive = false;
             userControls.style.display = 'none';
             timerEl.textContent = '';
@@ -943,7 +977,10 @@
             claimBtn.style.opacity = '1';
             claimBtn.textContent = 'USE THE BOARD';
             statusEl.textContent = 'Board is free — Use it!';
-            document.getElementById('name-wrap').style.display = 'block';
+            statusEl2.textContent = 'Board is free — Use it!';
+            document.getElementById('overlay-name-wrap').style.display = 'block';
+            const overlay = document.getElementById('draw-overlay');
+            overlay.style.display = 'none';
         }
 
         function renderBoard(board) {
@@ -1145,13 +1182,15 @@ function hslToRgb(h, s, l) {
         function finish() {
             if (confirm('Done already? Your art will stay on the board for the next visitor.')) {
                 ws.send(JSON.stringify({type: 'finish'}));
+                const overlay = document.getElementById('draw-overlay');
+                overlay.style.display = 'none';
             }
         }
 
         function claim() {
-            const name = document.getElementById('artist-name').value.trim() || 'Anonymous';
+            const name = document.getElementById('overlay-artist-name').value.trim() || 'Anonymous';
             ws.send(JSON.stringify({type: 'claim', name: name}));
-            document.getElementById('name-wrap').style.display = 'none';
+            document.getElementById('overlay-name-wrap').style.display = 'none';
         }
 
         function showLastSession(endedAt, duration, name, location) {
