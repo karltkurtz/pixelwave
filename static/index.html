@@ -611,6 +611,7 @@
         let iAmActive = false;
         let ws = null;
         let boardColors = new Array(NUM_LEDS).fill({r:0,g:0,b:0});
+        let currentSessionLocation = '';
 
         // Build LED grid
         for (let i = 0; i < NUM_LEDS; i++) {
@@ -1001,6 +1002,7 @@ function getSeasonalTheme() {
                     renderBoard(data.board);
                     updateHomeBadge(data.home);
                     if (data.session.active) {
+                        currentSessionLocation = data.location && data.location !== 'Unknown' ? ` in ${data.location}` : '';
                         setSessionActive(false);
                     } else {
                         setSessionIdle();
@@ -1021,7 +1023,8 @@ function getSeasonalTheme() {
                     messageEl.textContent = '';
                     claimWindowEl.textContent = '';
                     if (!data.is_you) {
-                        statusEl.textContent = 'Board is being used by someone...';
+                        currentSessionLocation = data.location && data.location !== 'Unknown' ? ` in ${data.location}` : '';
+                        statusEl.textContent = `Board in use by someone${currentSessionLocation}...`;
                         statusEl.style.color = 'var(--coral)';
                         document.getElementById('claim-btn').disabled = true;
                         document.getElementById('claim-btn').style.opacity = '0.3';
@@ -1069,7 +1072,7 @@ function getSeasonalTheme() {
                     timerEl.textContent = `${mins}:${secs.toString().padStart(2, '0')}`;
                     timerEl.style.color = 'var(--coral)';
                     if (!iAmActive) {
-                        statusEl.textContent = `Board in use — ${mins}:${secs.toString().padStart(2, '0')} remaining`;
+                        statusEl.textContent = `Board in use by someone${currentSessionLocation} — ${mins}:${secs.toString().padStart(2, '0')} remaining`;
                         statusEl.style.color = 'var(--coral)';
                     }
                 }

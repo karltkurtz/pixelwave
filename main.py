@@ -397,6 +397,7 @@ async def websocket_endpoint(websocket: WebSocket):
         "type": "init",
         "board": board_state,
         "session": {"active": session["active"]},
+        "location": session.get("location", ""),
         "home": home_status["home"],
         "last_session": session_history[-1] if session_history else None,
         "shoutout": shoutout if shoutout["name"] else None
@@ -433,7 +434,8 @@ async def websocket_endpoint(websocket: WebSocket):
                         try:
                             await client.send_json({
                                 "type": "session_start",
-                                "is_you": id(client) == user_id
+                                "is_you": id(client) == user_id,
+                                "location": location
                             })
                         except:
                             pass
