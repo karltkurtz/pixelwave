@@ -866,6 +866,100 @@
         function showUnderConstruction() {
             document.getElementById('construction-popup').style.display = 'block';
         }
+function getSeasonalTheme() {
+            const now = new Date();
+            const month = now.getMonth() + 1;
+            const day = now.getDate();
+
+            if (month === 1 && day === 1) return 'newyear';
+            if (month === 2 && day === 14) return 'valentine';
+            if (month === 3 && day === 17) return 'patrick';
+            if (month === 4 && (day >= 1 && day <= 7)) return 'easter';
+            if (month === 10) return 'halloween';
+            if (month === 11 && day >= 22 && day <= 28) return 'thanksgiving';
+            if (month === 12 && day <= 25) return 'christmas';
+            return null;
+        }
+
+        const themes = {
+            newyear: {
+                bg: 'linear-gradient(-45deg, #0e1117, #1a1a0e, #1a1500, #0e1117)',
+                accent: '#ffd700',
+                accent2: '#c0c0c0',
+                stickyBg: '#fffde0',
+                stickyText: 'Happy New Year! 🎆 Ring it in by drawing something on the board!',
+                badgeColor: '#ffd700'
+            },
+            valentine: {
+                bg: 'linear-gradient(-45deg, #1a0e0e, #2d0e1a, #1a0e14, #0e1117)',
+                accent: '#ff6b9d',
+                accent2: '#ff4d6d',
+                stickyBg: '#fff0f3',
+                stickyText: 'Happy Valentine\'s Day! 💕 Draw something sweet on the board!',
+                badgeColor: '#ff6b9d'
+            },
+            patrick: {
+                bg: 'linear-gradient(-45deg, #0e1a0e, #0d2d0d, #0e1a0e, #0e1117)',
+                accent: '#4caf50',
+                accent2: '#81c784',
+                stickyBg: '#f0fff0',
+                stickyText: 'Happy St. Patrick\'s Day! 🍀 Feeling lucky? Draw something on the board!',
+                badgeColor: '#4caf50'
+            },
+            easter: {
+                bg: 'linear-gradient(-45deg, #1a0e1a, #0e1a1a, #1a1a0e, #0e1117)',
+                accent: '#f48fb1',
+                accent2: '#fff176',
+                stickyBg: '#fff9f0',
+                stickyText: 'Happy Easter! 🐣 Hop over and draw something colorful on the board!',
+                badgeColor: '#f48fb1'
+            },
+            halloween: {
+                bg: 'linear-gradient(-45deg, #1a0e00, #1a001a, #0e0e00, #0e1117)',
+                accent: '#ff6d00',
+                accent2: '#aa00ff',
+                stickyBg: '#fff3e0',
+                stickyText: 'Happy Halloween! 🎃 Dare to draw something spooky on the board!',
+                badgeColor: '#ff6d00'
+            },
+            thanksgiving: {
+                bg: 'linear-gradient(-45deg, #1a0e00, #1a0a00, #0e0e00, #0e1117)',
+                accent: '#ff8f00',
+                accent2: '#a1887f',
+                stickyBg: '#fff8e1',
+                stickyText: 'Happy Thanksgiving! 🦃 Grateful you stopped by — draw something on the board!',
+                badgeColor: '#ff8f00'
+            },
+            christmas: {
+                bg: 'linear-gradient(-45deg, #0e1a0e, #1a0e0e, #0e1117, #0d1f0d)',
+                accent: '#ef5350',
+                accent2: '#66bb6a',
+                stickyBg: '#fff8f8',
+                stickyText: 'Merry Christmas! 🎄 Ho ho ho — draw something festive on the board!',
+                badgeColor: '#ef5350'
+            }
+        };
+
+        function applySeasonalTheme() {
+            const themeName = getSeasonalTheme();
+            if (!themeName) return;
+            const theme = themes[themeName];
+
+            document.getElementById('bg-layer').style.background = theme.bg;
+            document.getElementById('bg-layer').style.backgroundSize = '400% 400%';
+
+            const sticky = document.querySelector('.sticky-note');
+            if (sticky) {
+                sticky.style.background = theme.stickyBg;
+                sticky.querySelector('p').textContent = theme.stickyText;
+            }
+
+            document.documentElement.style.setProperty('--amber', theme.accent);
+            document.documentElement.style.setProperty('--teal', theme.accent2);
+        }
+
+        applySeasonalTheme();
+
         function openOverlay() {
             const overlay = document.getElementById('draw-overlay');
             overlay.style.display = 'flex';
