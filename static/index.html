@@ -1169,8 +1169,35 @@ function getSeasonalTheme() {
             if (!iAmActive || animRunning) return;
             const led = grid.children[index];
             const isLit = led.style.background && led.style.background !== '';
+            dragMode = isLit ? 'off' : 'on';
             paintLed(index, isLit ? true : false);
         }
+
+        grid.addEventListener('mousedown', (e) => {
+            if (!iAmActive || animRunning) return;
+            isDragging = true;
+            const led = e.target.closest('.led');
+            if (led) {
+                const index = Array.from(grid.children).indexOf(led);
+                const isLit = led.style.background && led.style.background !== '';
+                dragMode = isLit ? 'off' : 'on';
+                paintLed(index);
+            }
+        });
+
+        grid.addEventListener('mousemove', (e) => {
+            if (!iAmActive || animRunning || !isDragging) return;
+            const led = e.target.closest('.led');
+            if (led) {
+                const index = Array.from(grid.children).indexOf(led);
+                paintLed(index);
+            }
+        });
+
+        window.addEventListener('mouseup', () => {
+            isDragging = false;
+            dragMode = null;
+        });
 
         grid.addEventListener('touchstart', (e) => {
             if (!iAmActive) return;
