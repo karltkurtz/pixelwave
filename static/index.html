@@ -1175,15 +1175,22 @@ function getSeasonalTheme() {
 
         grid.addEventListener('mousedown', (e) => {
             if (!iAmActive || animRunning) return;
+            e.preventDefault();
             isDragging = true;
             const led = e.target.closest('.led');
             if (led) {
                 const index = Array.from(grid.children).indexOf(led);
-                const isLit = led.style.background && led.style.background !== '';
-                dragMode = isLit ? 'off' : 'on';
+                if (e.button === 2) {
+                    dragMode = 'off';
+                } else {
+                    const isLit = led.style.background && led.style.background !== '';
+                    dragMode = isLit ? 'off' : 'on';
+                }
                 paintLed(index);
             }
         });
+
+        grid.addEventListener('contextmenu', (e) => e.preventDefault());
 
         grid.addEventListener('mousemove', (e) => {
             if (!iAmActive || animRunning || !isDragging) return;
