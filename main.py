@@ -11,7 +11,7 @@ import urllib.parse
 app = FastAPI()
 app.mount("/static", StaticFiles(directory="static"), name="static")
 
-NUM_LEDS = 180
+NUM_LEDS = 256
 BOARD_FILE = "board_state.json"
 SHOUTOUT_FILE = "shoutout.json"
 GUESTBOOK_FILE = "guestbook.json"
