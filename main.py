@@ -198,7 +198,7 @@ async def end_session(reason: str, keep_anim: bool = False):
             "time": time.time(),
             "duration": duration
         })
-        if len(artwork_history) > 10:
+        if len(artwork_history) > 5:
             artwork_history.pop()
         save_artwork()
     await broadcast({"type": "last_session", "ended_at": session_history[-1]["ended_at"], "duration": duration, "name": name, "location": session_history[-1].get("location", "Unknown")})

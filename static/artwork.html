@@ -160,7 +160,9 @@
     </div>
 
     <script>
-        const NUM_LEDS = 32;
+        const NUM_LEDS = 256;
+        const COLS = 16;
+        const ROWS = 16;
         const CELL_SIZE = 16;
 
         function renderArtwork(entry, index) {
@@ -169,16 +171,18 @@
             card.style.animationDelay = `${index * 0.07}s`;
 
             const canvas = document.createElement('canvas');
-            canvas.width = NUM_LEDS * CELL_SIZE;
-            canvas.height = CELL_SIZE;
+            canvas.width = COLS * CELL_SIZE;
+            canvas.height = ROWS * CELL_SIZE;
             canvas.className = 'artwork-canvas';
 
             const ctx = canvas.getContext('2d');
             entry.board.forEach((color, i) => {
+                const col = i % COLS;
+                const row = Math.floor(i / COLS);
                 const isLit = color.r > 0 || color.g > 0 || color.b > 0;
                 ctx.fillStyle = isLit ? `rgb(${color.r},${color.g},${color.b})` : '#1a2030';
                 ctx.beginPath();
-                ctx.arc(i * CELL_SIZE + CELL_SIZE / 2, CELL_SIZE / 2, CELL_SIZE / 2 - 1, 0, Math.PI * 2);
+                ctx.arc(col * CELL_SIZE + CELL_SIZE / 2, row * CELL_SIZE + CELL_SIZE / 2, CELL_SIZE / 2 - 1, 0, Math.PI * 2);
                 ctx.fill();
             });
 
@@ -210,7 +214,7 @@
                     list.innerHTML = '<div class="empty-state">No artwork yet — be the first to draw something!</div>';
                     return;
                 }
-                data.forEach((entry, i) => list.appendChild(renderArtwork(entry, i)));
+                data.slice(0, 5).forEach((entry, i) => list.appendChild(renderArtwork(entry, i)));
             });
     </script>
 </body>
