@@ -113,11 +113,12 @@
         }
 
         .artwork-canvas {
-            width: 100%;
+            width: auto;
+            max-width: 100%;
             border-radius: 8px;
             image-rendering: pixelated;
             display: block;
-            margin-bottom: 12px;
+            margin: 0 auto 12px;
         }
 
         .artwork-stamp {
@@ -163,7 +164,7 @@
         const NUM_LEDS = 256;
         const COLS = 16;
         const ROWS = 16;
-        const CELL_SIZE = 16;
+        const CELL_SIZE = 10;
 
         function renderArtwork(entry, index) {
             const card = document.createElement('div');
