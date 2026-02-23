@@ -529,7 +529,7 @@
         <div style="width:100%; max-width:560px; display:flex; flex-direction:column; gap:20px;">
             <div style="display:flex; justify-content:space-between; align-items:center;">
                 <div style="font-family:'Press Start 2P',monospace; font-size:10px; color:var(--amber); letter-spacing:1px;">// DRAW</div>
-                <a onclick="closeOverlay()" style="font-family:'Press Start 2P',monospace; font-size:7px; padding:10px 16px; border-radius:8px; text-decoration:none; color:var(--teal); background:rgba(79,209,197,0.1); border:1px solid rgba(79,209,197,0.3); letter-spacing:0.5px; cursor:pointer;">← BACK TO LIVE STREAM</a>
+                <a id="back-btn" onclick="closeOverlay()" style="font-family:'Press Start 2P',monospace; font-size:7px; padding:10px 16px; border-radius:8px; text-decoration:none; color:var(--teal); background:rgba(79,209,197,0.1); border:1px solid rgba(79,209,197,0.3); letter-spacing:0.5px; cursor:pointer;">← BACK TO LIVE STREAM</a>
             </div>
 
             <div class="status-bar">
@@ -970,6 +970,7 @@
             claimBtn.style.opacity = '0.3';
             claimBtn.textContent = 'BOARD IN USE';
         
+            document.getElementById('back-btn').style.display = 'none';
             if (youAreInControl) {
                 userControls.style.display = 'flex';
                 statusEl2.textContent = 'You have control!';
@@ -989,6 +990,7 @@
             
             statusEl.textContent = 'Board is free — Use it!';
             statusEl2.textContent = 'Board is free — Use it!';
+            document.getElementById('back-btn').style.display = 'inline-block';
             document.getElementById('overlay-name-wrap').style.display = 'block';
             const overlay = document.getElementById('draw-overlay');
             overlay.style.display = 'none';
