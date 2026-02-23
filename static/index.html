@@ -909,17 +909,21 @@
                         animInterval = null;
                     }
                     userControls.style.display = 'none';
+                    timerEl.textContent = '';
                     claimBtn.disabled = true;
                     claimBtn.style.opacity = '0.3';
                     claimBtn.textContent = 'BOARD IN USE';
-                    messageEl.textContent = data.reason === 'timeout' ? 'Session timed out.' : 'Current user is finished.';
-                    statusEl.textContent = 'Waiting for board to open...';
+                    statusEl.textContent = 'Board opens soon...';
                 }
                 else if (data.type === 'claim_window') {
-                    claimWindowEl.textContent = `Opens in ${data.seconds}s...`;
+                    statusEl.textContent = `Board opens in ${data.seconds}s...`;
+                    document.getElementById('claim-btn').disabled = true;
+                    document.getElementById('claim-btn').style.opacity = '0.3';
                 }
                 else if (data.type === 'claim_window_tick') {
-                    claimWindowEl.textContent = `Opens in ${data.seconds}s...`;
+                    statusEl.textContent = `Board opens in ${data.seconds}s...`;
+                    document.getElementById('claim-btn').disabled = true;
+                    document.getElementById('claim-btn').style.opacity = '0.3';
                 }
                 else if (data.type === 'last_session') {
                     showLastSession(data.ended_at, data.duration, data.name, data.location);
@@ -928,8 +932,8 @@
                     showShoutout(data.name, data.label);
                 }
                 else if (data.type === 'claim_window_end') {
-                    claimWindowEl.textContent = '';
-                    messageEl.textContent = '';
+                    document.getElementById('claim-btn').disabled = false;
+                    document.getElementById('claim-btn').style.opacity = '1';
                     setSessionIdle();
                 }
                 else if (data.type === 'timer') {
