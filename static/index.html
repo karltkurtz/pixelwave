@@ -278,7 +278,7 @@
             animation: fadeUp 0.6s ease 0.3s both;
         }
 
-        #status { font-size: 13px; color: var(--muted); font-weight: 600; }
+        #status { font-size: 13px; color: var(--muted); font-weight: 600; transition: color 0.3s; }
 
         #timer {
             font-family: 'Press Start 2P', monospace;
@@ -1002,6 +1002,7 @@ function getSeasonalTheme() {
                     claimWindowEl.textContent = '';
                     if (!data.is_you) {
                         statusEl.textContent = 'Board is being used by someone...';
+                        statusEl.style.color = 'var(--coral)';
                         document.getElementById('claim-btn').disabled = true;
                         document.getElementById('claim-btn').style.opacity = '0.3';
                     }
@@ -1021,11 +1022,13 @@ function getSeasonalTheme() {
                 }
                 else if (data.type === 'claim_window') {
                     statusEl.textContent = `Board opens in ${data.seconds}s...`;
+                    statusEl.style.color = 'var(--amber)';
                     document.getElementById('claim-btn').disabled = true;
                     document.getElementById('claim-btn').style.opacity = '0.3';
                 }
                 else if (data.type === 'claim_window_tick') {
                     statusEl.textContent = `Board opens in ${data.seconds}s...`;
+                    statusEl.style.color = 'var(--amber)';
                     document.getElementById('claim-btn').disabled = true;
                     document.getElementById('claim-btn').style.opacity = '0.3';
                 }
@@ -1044,8 +1047,10 @@ function getSeasonalTheme() {
                     const mins = Math.floor(data.remaining / 60);
                     const secs = data.remaining % 60;
                     timerEl.textContent = `${mins}:${secs.toString().padStart(2, '0')}`;
+                    timerEl.style.color = 'var(--coral)';
                     if (!iAmActive) {
                         statusEl.textContent = `Board in use — ${mins}:${secs.toString().padStart(2, '0')} remaining`;
+                        statusEl.style.color = 'var(--coral)';
                     }
                 }
                 else if (data.type === 'led_update') {
@@ -1060,7 +1065,7 @@ function getSeasonalTheme() {
                 }
             };
 
-            ws.onopen = () => statusEl.textContent = 'Board is free — Use it!';
+            ws.onopen = () => { statusEl.textContent = 'Board is free — Use it!'; statusEl.style.color = 'var(--green)'; };
             ws.onclose = () => {
                 statusEl.textContent = 'Reconnecting...';
                 setTimeout(connectWS, 2000);
@@ -1076,9 +1081,11 @@ function getSeasonalTheme() {
             if (youAreInControl) {
                 userControls.style.display = 'flex';
                 statusEl2.textContent = 'You have control!';
+                statusEl2.style.color = 'var(--green)';
             } else {
                 userControls.style.display = 'none';
                 statusEl2.textContent = 'Board is in use.';
+                statusEl2.style.color = 'var(--coral)';
             }
         }
 
@@ -1091,7 +1098,9 @@ function getSeasonalTheme() {
             claimBtn.textContent = 'USE THE BOARD';
             
             statusEl.textContent = 'Board is free — Use it!';
+            statusEl.style.color = 'var(--green)';
             statusEl2.textContent = 'Board is free — Use it!';
+            statusEl2.style.color = 'var(--green)';
             document.getElementById('back-btn').style.display = 'inline-block';
             document.getElementById('overlay-name-wrap').style.display = 'block';
             const overlay = document.getElementById('draw-overlay');
