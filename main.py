@@ -257,6 +257,15 @@ async def donate():
         "Pragma": "no-cache"
     })
 
+@app.get("/about")
+async def about():
+    with open("static/about.html") as f:
+        content = f.read()
+    return HTMLResponse(content, headers={
+        "Cache-Control": "no-store, no-cache, must-revalidate",
+        "Pragma": "no-cache"
+    })
+
 @app.get("/guestbook")
 async def guestbook_page():
     with open("static/guestbook.html") as f:

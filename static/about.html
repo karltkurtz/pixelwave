@@ -1,0 +1,249 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>About — Pi Garage</title>
+    <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Nunito:wght@400;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg: #0e1117;
+            --surface: #161c27;
+            --amber: #f6ad55;
+            --coral: #fc8181;
+            --teal: #4fd1c5;
+            --green: #68d391;
+            --text: #e2e8f0;
+            --muted: #718096;
+            --border: #2d3748;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        #bg-layer {
+            position: fixed;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            background: linear-gradient(-45deg, #0e1117, #0d1f2d, #0e1a0e, #1a0e1a);
+            background-size: 400% 400%;
+            animation: bgShift 20s ease infinite;
+            z-index: -1;
+        }
+
+        @keyframes bgShift {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+
+        body {
+            color: var(--text);
+            font-family: 'Nunito', sans-serif;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 24px 16px 48px;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 32px;
+        }
+
+        .logo {
+            font-family: 'Press Start 2P', monospace;
+            font-size: clamp(18px, 4vw, 28px);
+            color: var(--amber);
+            text-shadow: 0 0 20px rgba(246,173,85,0.4);
+            letter-spacing: 2px;
+            margin-bottom: 8px;
+        }
+
+        .logo span { color: var(--teal); }
+
+        .subtitle {
+            font-family: 'Press Start 2P', monospace;
+            font-size: 9px;
+            color: var(--muted);
+            letter-spacing: 1px;
+        }
+
+        .content {
+            width: 100%;
+            max-width: 560px;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .card {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 20px 24px;
+        }
+
+        .card-title {
+            font-family: 'Press Start 2P', monospace;
+            font-size: 8px;
+            color: var(--amber);
+            letter-spacing: 1px;
+            margin-bottom: 14px;
+        }
+
+        .card p {
+            font-size: 14px;
+            color: var(--text);
+            line-height: 1.8;
+            font-weight: 600;
+        }
+
+        .hardware-list {
+            list-style: none;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .hardware-list li {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            font-size: 14px;
+            font-weight: 600;
+            color: var(--text);
+        }
+
+        .hardware-list li span.icon {
+            font-size: 18px;
+            width: 28px;
+            text-align: center;
+        }
+
+        .hardware-list li span.detail {
+            color: var(--muted);
+            font-size: 12px;
+            display: block;
+        }
+
+        .built-with {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            margin-top: 4px;
+        }
+
+        .tag {
+            font-family: 'Press Start 2P', monospace;
+            font-size: 7px;
+            padding: 6px 10px;
+            border-radius: 6px;
+            letter-spacing: 0.5px;
+        }
+
+        .tag-teal {
+            background: rgba(79,209,197,0.1);
+            color: var(--teal);
+            border: 1px solid rgba(79,209,197,0.3);
+        }
+
+        .tag-amber {
+            background: rgba(246,173,85,0.1);
+            color: var(--amber);
+            border: 1px solid rgba(246,173,85,0.3);
+        }
+
+        .back-btn {
+            font-family: 'Press Start 2P', monospace;
+            font-size: 7px;
+            padding: 10px 16px;
+            border-radius: 8px;
+            text-decoration: none;
+            color: var(--teal);
+            background: rgba(79,209,197,0.1);
+            border: 1px solid rgba(79,209,197,0.3);
+            letter-spacing: 0.5px;
+            margin-bottom: 24px;
+            display: inline-block;
+            align-self: flex-start;
+        }
+
+        .back-btn:hover { box-shadow: 0 0 12px rgba(79,209,197,0.3); }
+
+        @keyframes fadeUp {
+            from { opacity: 0; transform: translateY(16px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .card { animation: fadeUp 0.5s ease both; }
+        .card:nth-child(2) { animation-delay: 0.1s; }
+        .card:nth-child(3) { animation-delay: 0.2s; }
+        .card:nth-child(4) { animation-delay: 0.3s; }
+    </style>
+</head>
+<body>
+    <div id="bg-layer"></div>
+
+    <div class="header">
+        <div class="logo">Pi <span>Garage</span></div>
+        <div class="subtitle">// ABOUT THIS PROJECT</div>
+    </div>
+
+    <div class="content">
+        <a class="back-btn" href="/">← BACK TO BOARD</a>
+
+        <div class="card">
+            <div class="card-title">// THE IDEA</div>
+            <p>Pi Garage is a Raspberry Pi project site. For this project, a real LED matrix is sitting in Karl's house. Anyone on the internet can visit this page, claim the board, and draw something for Karl to find when he gets home. It's a little window into a stranger's living room — a guestbook made of light.</p>
+        </div>
+
+        <div class="card">
+            <div class="card-title">// THE HARDWARE</div>
+            <ul class="hardware-list">
+                <li>
+                    <span class="icon">🖥️</span>
+                    <div>
+                        Raspberry Pi 4
+                        <span class="detail">Runs the web server and controls the matrix</span>
+                    </div>
+                </li>
+                <li>
+                    <span class="icon">💡</span>
+                    <div>
+                        16x32 LED Matrix
+                        <span class="detail">512 individually addressable RGB LEDs</span>
+                    </div>
+                </li>
+                <li>
+                    <span class="icon">🔌</span>
+                    <div>
+                        Jumper Wires & Wago Connectors
+                        <span class="detail">Wiring the Pi to the matrix</span>
+                    </div>
+                </li>
+                <li>
+                    <span class="icon">📷</span>
+                    <div>
+                        iC1200 Inland Webcam
+                        <span class="detail">Live stream of the board</span>
+                    </div>
+                </li>
+            </ul>
+        </div>
+
+        <div class="card">
+            <div class="card-title">// BUILT WITH</div>
+            <div class="built-with">
+                <span class="tag tag-teal">FASTAPI</span>
+                <span class="tag tag-teal">PYTHON</span>
+                <span class="tag tag-teal">WEBSOCKETS</span>
+                <span class="tag tag-amber">CLAUDE AI</span>
+                <span class="tag tag-amber">VS CODE</span>
+                <span class="tag tag-teal">THREE.JS</span>
+            </div>
+        </div>
+
+    </div>
+</body>
+</html>
