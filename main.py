@@ -15,6 +15,7 @@ NUM_LEDS = 180
 BOARD_FILE = "board_state.json"
 SHOUTOUT_FILE = "shoutout.json"
 GUESTBOOK_FILE = "guestbook.json"
+ARTWORK_FILE = "artwork_history.json"
 CLAIM_WINDOW = 10
 ADMIN_PASSWORD = "litebrite123"
 NTFY_TOPIC = "theledboard-notify"
@@ -48,6 +49,16 @@ def load_guestbook():
 def save_guestbook():
     with open(GUESTBOOK_FILE, "w") as f:
         json.dump(guestbook, f)
+
+def load_artwork():
+    if os.path.exists(ARTWORK_FILE):
+        with open(ARTWORK_FILE) as f:
+            return json.load(f)
+    return []
+
+def save_artwork():
+    with open(ARTWORK_FILE, "w") as f:
+        json.dump(artwork_history, f)
 
 board_state = load_board()
 
@@ -87,6 +98,7 @@ session_history = []
 shoutout = load_shoutout()
 
 guestbook = load_guestbook()
+artwork_history = load_artwork()
 
 def save_session(duration_seconds, board_snapshot, name, location="Unknown"):
     session_history.append({
@@ -176,7 +188,18 @@ async def end_session(reason: str, keep_anim: bool = False):
         anim_running = True
         anim_task = asyncio.create_task(run_server_anim())
     name = session.get("artist_name", "Anonymous")
-    save_session(duration, list(board_state), name, session.get("location", "Unknown"))
+    location = session.get("location", "Unknown")
+    save_session(duration, list(board_state), name, location)
+    artwork_history.insert(0, {
+        "board": list(board_state),
+        "name": name,
+        "location": location,
+        "time": time.time(),
+        "duration": duration
+    })
+    if len(artwork_history) > 10:
+        artwork_history.pop()
+    save_artwork()
     await broadcast({"type": "last_session", "ended_at": session_history[-1]["ended_at"], "duration": duration, "name": name, "location": session_history[-1].get("location", "Unknown")})
     session["active"] = False
     session["user_id"] = None
@@ -256,6 +279,19 @@ async def donate():
         "Cache-Control": "no-store, no-cache, must-revalidate",
         "Pragma": "no-cache"
     })
+
+@app.get("/artwork")
+async def artwork_page():
+    with open("static/artwork.html") as f:
+        content = f.read()
+    return HTMLResponse(content, headers={
+        "Cache-Control": "no-store, no-cache, must-revalidate",
+        "Pragma": "no-cache"
+    })
+
+@app.get("/artwork/entries")
+async def get_artwork():
+    return artwork_history
 
 @app.get("/about")
 async def about():
