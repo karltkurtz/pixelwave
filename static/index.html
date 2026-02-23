@@ -906,6 +906,11 @@
                     setSessionActive(data.is_you);
                     messageEl.textContent = '';
                     claimWindowEl.textContent = '';
+                    if (!data.is_you) {
+                        statusEl.textContent = 'Board is being used by someone...';
+                        document.getElementById('claim-btn').disabled = true;
+                        document.getElementById('claim-btn').style.opacity = '0.3';
+                    }
                 }
                 else if (data.type === 'session_end') {
                     iAmActive = false;
@@ -945,6 +950,9 @@
                     const mins = Math.floor(data.remaining / 60);
                     const secs = data.remaining % 60;
                     timerEl.textContent = `${mins}:${secs.toString().padStart(2, '0')}`;
+                    if (!iAmActive) {
+                        statusEl.textContent = `Board in use — ${mins}:${secs.toString().padStart(2, '0')} remaining`;
+                    }
                 }
                 else if (data.type === 'led_update') {
                     updateLed(data.index, data.color);
