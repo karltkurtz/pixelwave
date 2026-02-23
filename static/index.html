@@ -432,14 +432,14 @@
         }
 
         #led-grid {
-            display: flex;
-            flex-wrap: wrap;
+            display: grid;
+            grid-template-columns: repeat(16, 1fr);
             gap: 3px;
         }
 
         .led {
-            width: 14px;
-            height: 14px;
+            width: 18px;
+            height: 18px;
             border-radius: 50%;
             background: #1a2030;
             border: 1px solid #2a3348;
@@ -447,7 +447,7 @@
             transition: transform 0.1s, box-shadow 0.15s;
         }
 
-        .led:hover { transform: scale(1.3); border-color: var(--amber); }
+        .led:hover { transform: scale(1.2); border-color: var(--amber); }
 
         @keyframes fadeDown {
             from { opacity: 0; transform: translateY(-16px) rotate(-1.2deg); }
@@ -572,9 +572,9 @@
     </div>
 
     <script>
-        const NUM_LEDS = 32;
-        const COLS = 32;
-        const ROWS = 1;
+        const NUM_LEDS = 256;
+        const COLS = 16;
+        const ROWS = 16;
         const grid = document.getElementById('led-grid');
         const statusEl = document.getElementById('status');
         const claimBtn = document.getElementById('overlay-claim-btn');
