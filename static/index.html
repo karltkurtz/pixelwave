@@ -1619,11 +1619,32 @@ function hslToRgb(h, s, l) {
             bar.style.display = 'block';
         }
 
-        function reloadStream() {
-            const img = document.getElementById('stream-img');
-            img.src = `https://stream.pigarage.com/?action=stream&t=${Date.now()}`;
+        let streamInterval = null;
+
+        function startStream() {
+            if (streamInterval) return;
+            streamInterval = setInterval(() => {
+                const img = document.getElementById('stream-img');
+                img.src = `https://stream.pigarage.com/?action=snapshot&t=${Date.now()}`;
+            }, 100);
         }
-        reloadStream();
+
+        function stopStream() {
+            if (streamInterval) {
+                clearInterval(streamInterval);
+                streamInterval = null;
+            }
+        }
+
+        document.addEventListener('visibilitychange', () => {
+            if (document.hidden) {
+                stopStream();
+            } else {
+                startStream();
+            }
+        });
+
+        startStream();
 
         function launchConfetti() {
             const canvas = document.getElementById('confetti-canvas');
