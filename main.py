@@ -35,7 +35,7 @@ try:
                     latest_frame = buf.getvalue()
             except Exception:
                 pass
-            time.sleep(0.05)
+            time.sleep(0.02)
 
     cam_thread = threading.Thread(target=capture_loop, daemon=True)
     cam_thread.start()
