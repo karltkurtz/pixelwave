@@ -1,4 +1,5 @@
-from fastapi import FastAPI, WebSocket, WebSocketDisconnect, Header, HTTPException, Request
+from fastapi import FastAPI, WebSocket, WebSocketDisconnect, Header, HTTPException, Request, Response
+from fastapi.responses import StreamingResponse
 from fastapi.responses import HTMLResponse
 from fastapi.staticfiles import StaticFiles
 import asyncio
@@ -9,6 +10,49 @@ import urllib.request
 import urllib.parse
 
 app = FastAPI()
+# Camera stream
+try:
+    from picamera2 import Picamera2
+    import io
+    import threading
+    import time
+
+    latest_frame = None
+    frame_lock = threading.Lock()
+
+    picam2 = Picamera2()
+    cam_config = picam2.create_video_configuration(main={"size": (640, 480)})
+    picam2.configure(cam_config)
+    picam2.start()
+
+    def capture_loop():
+        global latest_frame
+        while True:
+            try:
+                buf = io.BytesIO()
+                picam2.capture_file(buf, format='jpeg')
+                with frame_lock:
+                    latest_frame = buf.getvalue()
+            except Exception:
+                pass
+            time.sleep(0.05)
+
+    cam_thread = threading.Thread(target=capture_loop, daemon=True)
+    cam_thread.start()
+    camera_available = True
+except Exception:
+    camera_available = False
+
+@app.get("/snapshot")
+async def snapshot():
+    if not camera_available or latest_frame is None:
+        return Response(status_code=503)
+    with frame_lock:
+        frame = latest_frame
+    return Response(content=frame, media_type="image/jpeg", headers={
+        "Cache-Control": "no-cache, no-store",
+        "Access-Control-Allow-Origin": "*"
+    })
 app.mount("/static", StaticFiles(directory="static"), name="static")
 
 NUM_LEDS = 256

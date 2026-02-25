@@ -1614,19 +1614,34 @@ function hslToRgb(h, s, l) {
 
         function showShoutout(name, label) {
             const bar = document.getElementById('shoutout-bar');
-            document.getElementById('shoutout-name').textContent = name;
-            document.getElementById('shoutout-amount').textContent = label;
+            if (!bar) return;
+            const nameEl = document.getElementById('shoutout-name');
+            const amountEl = document.getElementById('shoutout-amount');
+            if (nameEl) nameEl.textContent = name;
+            if (amountEl) amountEl.textContent = label;
             bar.style.display = 'block';
         }
 
         let streamInterval = null;
+        let streamBusy = false;
 
         function startStream() {
             if (streamInterval) return;
+            const img = document.getElementById('stream-img');
+
             streamInterval = setInterval(() => {
-                const img = document.getElementById('stream-img');
-                img.src = `https://stream.pigarage.com/?action=snapshot&t=${Date.now()}`;
-            }, 100);
+                if (streamBusy) return;
+                streamBusy = true;
+                const next = new Image();
+                next.onload = () => {
+                    img.src = next.src;
+                    streamBusy = false;
+                };
+                next.onerror = () => {
+                    streamBusy = false;
+                };
+                next.src = `https://pigarage.com/snapshot?t=${Date.now()}`;
+            }, 150);
         }
 
         function stopStream() {
@@ -1640,8 +1655,14 @@ function hslToRgb(h, s, l) {
             if (document.hidden) {
                 stopStream();
             } else {
+                stopStream();
                 startStream();
             }
+        });
+
+        window.addEventListener('focus', () => {
+            stopStream();
+            startStream();
         });
 
         startStream();
