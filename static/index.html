@@ -8,6 +8,9 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/loaders/GLTFLoader.js"></script>
     <link rel="stylesheet" href="/static/style.css?v=3">
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+    <meta http-equiv="Pragma" content="no-cache">
+    <meta http-equiv="Expires" content="0">
     <script src="/static/templates.js?v=2"></script>
 </head>
 <body>
@@ -89,9 +92,6 @@
             </div>
 
             <div class="controls-bar">
-                <div class="name-wrap" id="overlay-name-wrap">
-                    <input type="text" id="overlay-artist-name" maxlength="24" placeholder="First name?" />
-                </div>
                 <button class="btn btn-claim" id="overlay-claim-btn" onclick="claim()">USE THE BOARD</button>
                 <button class="btn btn-view" id="view-toggle" onclick="showUnderConstruction()" style="opacity:0.3;">⬡ 3D VIEW</button>
                 <div id="user-controls" style="display:none; align-items:center; gap:12px; flex-wrap:wrap;">
@@ -648,7 +648,6 @@ function getSeasonalTheme() {
             statusEl2.textContent = 'Board is free — Use it!';
             statusEl2.style.color = 'var(--green)';
             document.getElementById('back-btn').style.display = 'inline-block';
-            document.getElementById('overlay-name-wrap').style.display = 'block';
             const overlay = document.getElementById('draw-overlay');
             overlay.style.display = 'none';
         }
@@ -926,17 +925,24 @@ function hslToRgb(h, s, l) {
         }
 
         function finish() {
-            if (confirm('Done already? Your art will stay on the board for the next visitor.')) {
-                ws.send(JSON.stringify({type: 'finish'}));
-                const overlay = document.getElementById('draw-overlay');
-                overlay.style.display = 'none';
-            }
+            document.getElementById('finish-popup').style.display = 'flex';
+            document.getElementById('finish-name-input').value = '';
+            document.getElementById('finish-name-input').focus();
+        }
+
+        function confirmFinish() {
+            const name = document.getElementById('finish-name-input').value.trim() || 'Anonymous';
+            ws.send(JSON.stringify({type: 'finish', name: name}));
+            document.getElementById('finish-popup').style.display = 'none';
+            document.getElementById('draw-overlay').style.display = 'none';
+        }
+
+        function cancelFinish() {
+            document.getElementById('finish-popup').style.display = 'none';
         }
 
         function claim() {
-            const name = document.getElementById('overlay-artist-name').value.trim() || 'Anonymous';
-            ws.send(JSON.stringify({type: 'claim', name: name}));
-            document.getElementById('overlay-name-wrap').style.display = 'none';
+            ws.send(JSON.stringify({type: 'claim', name: 'Anonymous'}));
         }
 
         function showLastSession(endedAt, duration, name, location) {
@@ -1116,6 +1122,17 @@ function hslToRgb(h, s, l) {
     <div style="font-family:'Press Start 2P',monospace; font-size:8px; color:var(--amber); margin-bottom:12px; letter-spacing:1px;">🚧 UNDER CONSTRUCTION</div>
     <div style="font-size:13px; color:var(--muted); font-weight:600; margin-bottom:16px; line-height:1.7;">The 3D view is being reworked and will be back soon!</div>
     <button onclick="document.getElementById('construction-popup').style.display='none'" style="font-family:'Press Start 2P',monospace; font-size:7px; padding:8px 14px; border-radius:6px; background:rgba(79,209,197,0.1); color:var(--teal); border:1px solid rgba(79,209,197,0.3); cursor:pointer;">✕ CLOSE</button>
+</div>
+<div id="finish-popup" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.7); z-index:2000; align-items:center; justify-content:center;">
+    <div style="background:var(--surface); border:1px solid var(--border); border-radius:12px; padding:24px; max-width:340px; width:90%;">
+        <div style="font-family:'Press Start 2P',monospace; font-size:8px; color:var(--amber); letter-spacing:1px; margin-bottom:16px;">🎨 DONE?</div>
+        <div style="font-size:13px; color:var(--muted); font-weight:600; margin-bottom:16px; line-height:1.7;">Add your name to your art (Optional).</div>
+        <input id="finish-name-input" type="text" maxlength="24" placeholder="First name?" style="width:100%; padding:10px; border-radius:8px; background:rgba(255,255,255,0.05); border:1px solid var(--border); color:var(--text); font-family:'Press Start 2P',monospace; font-size:8px; margin-bottom:16px; box-sizing:border-box;" />
+        <div style="display:flex; gap:10px;">
+            <button class="btn btn-clear" style="flex:1;" onclick="cancelFinish()">CANCEL</button>
+            <button class="btn btn-finish" style="flex:1;" onclick="confirmFinish()">OK</button>
+        </div>
+    </div>
 </div>
 </body>
 </html>

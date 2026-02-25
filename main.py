@@ -486,6 +486,9 @@ async def websocket_endpoint(websocket: WebSocket):
 
             elif data["type"] == "finish":
                 if session["user_id"] == user_id:
+                    name = data.get("name", "Anonymous")
+                    if name:
+                        session["artist_name"] = name
                     keep = data.get("keep_anim", False)
                     await end_session("finished", keep_anim=keep)
 
