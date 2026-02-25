@@ -7,7 +7,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Nunito:wght@400;600;700&display=swap" rel="stylesheet">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/loaders/GLTFLoader.js"></script>
-    <link rel="stylesheet" href="/static/style.css">
+    <link rel="stylesheet" href="/static/style.css?v=3">
     <script src="/static/templates.js"></script>
 </head>
 <body>
@@ -836,6 +836,14 @@ function hslToRgb(h, s, l) {
             };
         }
 
+        function switchArtTab(tab) {
+            document.querySelectorAll('.art-tab-content').forEach(el => el.style.display = 'none');
+            document.querySelectorAll('.art-tab').forEach(el => el.classList.remove('active-tab'));
+            const content = document.getElementById('art-tab-' + tab);
+            if (content) content.style.display = 'grid';
+            event.target.classList.add('active-tab');
+        }
+
         function loadPixelArt(name) {
             const template = pixelArtTemplates[name];
             const colorMap = pixelArtColors[name];
@@ -1062,22 +1070,39 @@ function hslToRgb(h, s, l) {
         connectWS();
     </script>
     <div id="pixel-art-popup" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.7); z-index:2000; align-items:center; justify-content:center;">
-    <div style="background:var(--surface); border:1px solid var(--border); border-radius:12px; padding:24px; max-width:340px; width:90%;">
+    <div style="background:var(--surface); border:1px solid var(--border); border-radius:12px; padding:24px; max-width:520px; width:95%; height:400px; overflow-y:auto;">
         <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:16px;">
             <div style="font-family:'Press Start 2P',monospace; font-size:8px; color:var(--amber); letter-spacing:1px;">🎨 PIXEL ART</div>
             <button onclick="document.getElementById('pixel-art-popup').style.display='none'" style="font-family:'Press Start 2P',monospace; font-size:7px; padding:6px 10px; border-radius:6px; background:rgba(255,255,255,0.05); color:var(--muted); border:1px solid var(--border); cursor:pointer;">✕</button>
         </div>
-        <div style="display:grid; grid-template-columns:repeat(2,1fr); gap:10px;">
+        <div id="pixel-art-tabs" style="display:flex; gap:6px; flex-wrap:wrap; margin-bottom:16px;">
+            <button class="art-tab active-tab" onclick="switchArtTab('gaming')">🎮 GAMING</button>
+            <button class="art-tab" onclick="switchArtTab('popcult')">🎬 POP CULTURE</button>
+            <button class="art-tab" onclick="switchArtTab('expressions')">😊 EXPRESSIONS</button>
+            <button class="art-tab" onclick="switchArtTab('animals')">🐾 ANIMALS</button>
+            <button class="art-tab" onclick="switchArtTab('holiday')">🎉 HOLIDAY</button>
+        </div>
+        <div id="art-tab-gaming" class="art-tab-content" style="display:grid; grid-template-columns:repeat(2,1fr); gap:10px;">
             <button class="btn btn-surprise" onclick="loadPixelArt('mario')">🍄 MARIO</button>
             <button class="btn btn-surprise" onclick="loadPixelArt('batman')">🦇 BATMAN</button>
             <button class="btn btn-surprise" onclick="loadPixelArt('pacman')">👾 PAC-MAN</button>
             <button class="btn btn-surprise" onclick="loadPixelArt('invader')">👾 INVADER</button>
-            <button class="btn btn-surprise" onclick="loadPixelArt('heart')">❤️ HEART</button>
-            <button class="btn btn-surprise" onclick="loadPixelArt('smiley')">😊 SMILEY</button>
+            <button class="btn btn-surprise" onclick="loadPixelArt('amongus')">🔴 AMONG US</button>
+        </div>
+        <div id="art-tab-popcult" class="art-tab-content" style="display:none; grid-template-columns:repeat(2,1fr); gap:10px;">
             <button class="btn btn-surprise" onclick="loadPixelArt('vader')">🌑 VADER</button>
             <button class="btn btn-surprise" onclick="loadPixelArt('stormtrooper')">⬜ TROOPER</button>
-            <button class="btn btn-surprise" onclick="loadPixelArt('amongus')">🔴 AMONG US</button>
             <button class="btn btn-surprise" onclick="loadPixelArt('skull')">💀 SKULL</button>
+        </div>
+        <div id="art-tab-expressions" class="art-tab-content" style="display:none; grid-template-columns:repeat(2,1fr); gap:10px;">
+            <button class="btn btn-surprise" onclick="loadPixelArt('heart')">❤️ HEART</button>
+            <button class="btn btn-surprise" onclick="loadPixelArt('smiley')">😊 SMILEY</button>
+        </div>
+        <div id="art-tab-animals" class="art-tab-content" style="display:none; grid-template-columns:repeat(2,1fr); gap:10px;">
+            <div style="font-family:'Press Start 2P',monospace; font-size:7px; color:var(--muted); text-align:center; padding:20px; grid-column:span 2;">COMING SOON</div>
+        </div>
+        <div id="art-tab-holiday" class="art-tab-content" style="display:none; grid-template-columns:repeat(2,1fr); gap:10px;">
+            <div style="font-family:'Press Start 2P',monospace; font-size:7px; color:var(--muted); text-align:center; padding:20px; grid-column:span 2;">COMING SOON</div>
         </div>
     </div>
 </div>

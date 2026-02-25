@@ -468,3 +468,21 @@
             pointer-events: none;
             z-index: 9999;
         }
+
+.art-tab {
+    font-family: 'Press Start 2P', monospace;
+    font-size: 7px;
+    padding: 8px 12px;
+    border-radius: 6px 6px 0 0;
+    background: rgba(79,209,197,0.1);
+    color: var(--teal);
+    border: 1px solid rgba(79,209,197,0.3);
+    border-bottom: 2px solid rgba(79,209,197,0.5);
+    cursor: pointer;
+    transition: transform 0.1s, box-shadow 0.1s;
+    letter-spacing: 0.5px;
+}
+
+.art-tab:hover { box-shadow: 0 0 12px rgba(79,209,197,0.3); }
+.art-tab:active { transform: scale(0.96); }
+.active-tab { background: rgba(159,122,234,0.15); color: #9f7aea; border-color: rgba(159,122,234,0.4); box-shadow: 0 0 12px rgba(159,122,234,0.2); }
