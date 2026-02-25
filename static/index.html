@@ -11,7 +11,7 @@
     <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
     <meta http-equiv="Pragma" content="no-cache">
     <meta http-equiv="Expires" content="0">
-    <script src="/static/templates.js?v=3"></script>
+    <script src="/static/templates.js?v=4"></script>
 </head>
 <body>
     <div id="bg-layer"></div>
@@ -841,6 +841,45 @@ function hslToRgb(h, s, l) {
             };
         }
 
+        function getHolidayTemplates() {
+            const now = new Date();
+            const m = now.getMonth() + 1;
+            const d = now.getDate();
+            const templates = [];
+            if (m === 2 && d <= 14) templates.push({key:'valentineheart', label:'❤️ VALENTINE'});
+            if (m === 3 && d <= 17) templates.push({key:'shamrock', label:'🍀 SHAMROCK'});
+            if ((m === 3 && d >= 15) || (m === 4 && d <= 30)) templates.push({key:'easterbunny', label:'🐰 EASTER BUNNY'});
+            if (m === 7 && d <= 7) templates.push({key:'fireworks', label:'🎆 FIREWORKS'});
+            if (m === 9) templates.push({key:'harvestmoon', label:'🎑 HARVEST MOON'});
+            if (m === 10) templates.push({key:'pumpkin', label:'🎃 PUMPKIN'});
+            if (m === 11 && d <= 28) templates.push({key:'turkey', label:'🦃 TURKEY'});
+            if ((m === 12 && d >= 1 && d <= 25) || (m === 1 && d <= 7)) templates.push({key:'snowflake', label:'❄️ SNOWFLAKE'});
+            if (m === 12 && d <= 25) templates.push({key:'christmastree', label:'🎄 XMAS TREE'});
+            if (m === 12 && d <= 25) templates.push({key:'santa', label:'🎅 SANTA'});
+            if (m === 12 && d <= 25) templates.push({key:'menorah', label:'🕎 MENORAH'});
+            if ((m === 12 && d >= 26) || (m === 1 && d <= 7)) templates.push({key:'newyearsball', label:'🎊 NEW YEAR'});
+            return templates;
+        }
+
+        function populateHolidayTab() {
+            const container = document.getElementById('art-tab-holiday');
+            const templates = getHolidayTemplates();
+            container.innerHTML = '';
+            if (templates.length === 0) {
+                container.innerHTML = '<div style="font-family:\'Press Start 2P\',monospace; font-size:7px; color:var(--muted); text-align:center; padding:20px; grid-column:span 2;">NO HOLIDAYS RIGHT NOW — CHECK BACK SOON!</div>';
+            } else {
+                templates.forEach(t => {
+                    const btn = document.createElement('button');
+                    btn.className = 'btn btn-surprise';
+                    btn.textContent = t.label;
+                    btn.onclick = () => loadPixelArt(t.key);
+                    container.appendChild(btn);
+                });
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', populateHolidayTab);
+
         function switchArtTab(tab) {
             document.querySelectorAll('.art-tab-content').forEach(el => el.style.display = 'none');
             document.querySelectorAll('.art-tab').forEach(el => el.classList.remove('active-tab'));
@@ -1135,7 +1174,6 @@ function hslToRgb(h, s, l) {
             <div style="font-family:'Press Start 2P',monospace; font-size:7px; color:var(--muted); text-align:center; padding:20px; grid-column:span 2;">COMING SOON</div>
         </div>
         <div id="art-tab-holiday" class="art-tab-content" style="display:none; grid-template-columns:repeat(2,1fr); gap:10px;">
-            <div style="font-family:'Press Start 2P',monospace; font-size:7px; color:var(--muted); text-align:center; padding:20px; grid-column:span 2;">COMING SOON</div>
         </div>
     </div>
 </div>
