@@ -486,3 +486,31 @@
 .art-tab:hover { box-shadow: 0 0 12px rgba(79,209,197,0.3); }
 .art-tab:active { transform: scale(0.96); }
 .active-tab { background: rgba(159,122,234,0.15); color: #9f7aea; border-color: rgba(159,122,234,0.4); box-shadow: 0 0 12px rgba(159,122,234,0.2); }
+
+#brightness-slider {
+    -webkit-appearance: none;
+    appearance: none;
+    height: 4px;
+    border-radius: 2px;
+    background: rgba(159,122,234,0.4);
+    outline: none;
+}
+
+#brightness-slider::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 16px;
+    height: 16px;
+    border-radius: 50%;
+    background: #9f7aea;
+    cursor: pointer;
+}
+
+#brightness-slider::-moz-range-thumb {
+    width: 16px;
+    height: 16px;
+    border-radius: 50%;
+    background: #9f7aea;
+    cursor: pointer;
+    border: none;
+}

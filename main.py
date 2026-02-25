@@ -43,6 +43,16 @@ try:
 except Exception:
     camera_available = False
 
+@app.post("/brightness")
+async def set_brightness(request: Request):
+    data = await request.json()
+    level = int(data.get("level", 15))
+    level = max(1, min(102, level))
+    if HAS_LEDS:
+        strip.setBrightness(level)
+        strip.show()
+    return {"brightness": level}
+
 @app.get("/snapshot")
 async def snapshot():
     if not camera_available or latest_frame is None:

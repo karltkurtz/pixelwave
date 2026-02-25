@@ -7,7 +7,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Nunito:wght@400;600;700&display=swap" rel="stylesheet">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/loaders/GLTFLoader.js"></script>
-    <link rel="stylesheet" href="/static/style.css?v=3">
+    <link rel="stylesheet" href="/static/style.css?v=5">
     <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
     <meta http-equiv="Pragma" content="no-cache">
     <meta http-equiv="Expires" content="0">
@@ -62,7 +62,7 @@
             </div>
             <div id="timer"></div>
         </div>
-        <button class="btn btn-claim" id="claim-btn" onclick="openOverlay()" style="width:100%;">USE THE BOARD</button>
+        <button class="btn btn-claim" id="claim-btn" onclick="openOverlay()" style="width:100%;">USE THE ARTBOARD</button>
 
         <div class="last-session-bar" id="last-session-bar" style="display:none;">
             ✏️ Last drawing: <span id="last-session-time"></span>
@@ -92,7 +92,7 @@
             </div>
 
             <div class="controls-bar">
-                <button class="btn btn-claim" id="overlay-claim-btn" onclick="claim()">USE THE BOARD</button>
+                <button class="btn btn-claim" id="overlay-claim-btn" onclick="claim()">USE THE ARTBOARD</button>
                 <button class="btn btn-view" id="view-toggle" onclick="showUnderConstruction()" style="opacity:0.3;">⬡ 3D VIEW</button>
                 <div id="user-controls" style="display:none; align-items:center; gap:12px; flex-wrap:wrap;">
                     <div class="color-wrap">
@@ -102,7 +102,12 @@
                     <button class="btn btn-surprise" onclick="document.getElementById('pixel-art-popup').style.display='flex'">🎨 PIXEL ART GENERATOR</button>
                     <button class="btn btn-surprise" onclick="surpriseMe()">🎲 SURPRISE</button>
                     <button class="btn btn-clear" onclick="clearBoard()">CLEAR</button>
-                    <button class="btn btn-finish" style="width:100%;" onclick="finish()">DONE</button>
+                    <div style="display:flex; align-items:center; gap:10px; width:100%;">
+                        <span style="font-family:'Press Start 2P',monospace; font-size:6px; color:var(--muted); white-space:nowrap;">BRIGHTNESS</span>
+                        <input type="range" id="brightness-slider" min="1" max="102" value="15" style="flex:1;" oninput="updateBrightness(this.value)">
+                        <span id="brightness-label" style="font-family:'Press Start 2P',monospace; font-size:6px; color:var(--amber); white-space:nowrap;">6%</span>
+                        <span style="font-family:'Press Start 2P',monospace; font-size:6px; color:var(--muted); white-space:nowrap;">MAX</span>
+                    </div>
                 </div>
             </div>
 
@@ -110,6 +115,7 @@
                 <div class="grid-label" style="text-align:center; line-height:2;">CLICK INDIVIDUAL CELLS OR<br>HOLD AND DRAG TO DRAW</div>
                 <div id="led-grid"></div>
             </div>
+            <button class="btn btn-finish" style="width:100%; margin-top:12px;" onclick="finish()">DONE</button>
         </div>
     </div>
 
@@ -611,7 +617,7 @@ function getSeasonalTheme() {
                 }
             };
 
-            ws.onopen = () => { statusEl.textContent = 'Board is free — Use it!'; statusEl.style.color = 'var(--green)'; };
+            ws.onopen = () => { statusEl.textContent = 'Artboard is free — Use it!'; statusEl.style.color = 'var(--green)'; };
             ws.onclose = () => {
                 statusEl.textContent = 'Reconnecting...';
                 setTimeout(connectWS, 2000);
@@ -641,11 +647,11 @@ function getSeasonalTheme() {
             timerEl.textContent = '';
             claimBtn.disabled = false;
             claimBtn.style.opacity = '1';
-            claimBtn.textContent = 'USE THE BOARD';
+            claimBtn.textContent = 'USE THE ARTBOARD';
             
-            statusEl.textContent = 'Board is free — Use it!';
+            statusEl.textContent = 'Artboard is free — Use it!';
             statusEl.style.color = 'var(--green)';
-            statusEl2.textContent = 'Board is free — Use it!';
+            statusEl2.textContent = 'Artboard is free — Use it!';
             statusEl2.style.color = 'var(--green)';
             document.getElementById('back-btn').style.display = 'inline-block';
             const overlay = document.getElementById('draw-overlay');
@@ -922,6 +928,16 @@ function hslToRgb(h, s, l) {
 
         function clearBoard() {
             fetch('/clear', { method: 'POST' });
+        }
+
+        function updateBrightness(value) {
+            const pct = Math.round((value / 102) * 100);
+            document.getElementById('brightness-label').textContent = pct + '%';
+            fetch('/brightness', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({level: parseInt(value)})
+            });
         }
 
         function finish() {
