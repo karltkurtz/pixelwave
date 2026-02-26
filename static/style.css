@@ -355,6 +355,7 @@
             background: var(--amber);
             color: #1a1a2e;
             box-shadow: 0 0 16px rgba(246,173,85,0.3);
+            animation: claimPulse 2s ease-in-out infinite, claimFloat 3s ease-in-out infinite;
         }
 
         .btn-claim:hover { box-shadow: 0 0 24px rgba(246,173,85,0.5); }
@@ -363,6 +364,17 @@
             opacity: 0.3;
             cursor: not-allowed;
             box-shadow: none;
+            animation: none;
+        }
+
+        @keyframes claimPulse {
+            0%, 100% { box-shadow: 0 0 16px rgba(246,173,85,0.3); }
+            50% { box-shadow: 0 0 32px rgba(246,173,85,0.8), 0 0 48px rgba(246,173,85,0.4); }
+        }
+
+        @keyframes claimFloat {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-4px); }
         }
 
         .btn-finish { background: var(--green); color: #1a1a2e; }
