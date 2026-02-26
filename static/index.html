@@ -1119,7 +1119,7 @@ function hslToRgb(h, s, l) {
         }
 
         function updateVisitorCounter(total, unique, locations) {
-            let text = `👁 ${total} VISITS — ${unique} UNIQUE`;
+            let text = `👁 ${total} VISITS`;
             if (locations && locations.length > 0) {
                 text += ` — ${locations.join(' · ')}`;
             }
