@@ -15,6 +15,7 @@
 </head>
 <body>
     <div id="bg-layer"></div>
+    <canvas id="starfield" style="position:fixed; top:0; left:0; width:100%; height:100%; z-index:0; pointer-events:none;"></canvas>
     <canvas id="confetti-canvas"></canvas>
 
     <div class="header">
@@ -1199,5 +1200,61 @@ function hslToRgb(h, s, l) {
         </div>
     </div>
 </div>
+<script>
+    (function() {
+        const canvas = document.getElementById('starfield');
+        const ctx = canvas.getContext('2d');
+        let pixels = [];
+        const NUM_PIXELS = 60;
+        const COLORS = [
+            'rgba(255,50,50,',
+            'rgba(50,255,100,',
+            'rgba(50,150,255,',
+            'rgba(255,220,50,',
+            'rgba(255,100,255,',
+            'rgba(50,255,255,',
+            'rgba(255,150,50,',
+        ];
+
+        function resize() {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+        }
+
+        function initPixels() {
+            pixels = [];
+            for (let i = 0; i < NUM_PIXELS; i++) {
+                pixels.push({
+                    x: Math.random() * canvas.width,
+                    y: Math.random() * canvas.height,
+                    size: Math.floor(Math.random() * 4) + 3,
+                    speed: Math.random() * 0.4 + 0.1,
+                    color: COLORS[Math.floor(Math.random() * COLORS.length)],
+                    opacity: Math.random() * 0.25 + 0.05
+                });
+            }
+        }
+
+        function draw() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            pixels.forEach(p => {
+                ctx.fillStyle = `${p.color}${p.opacity})`;
+                ctx.fillRect(p.x, p.y, p.size, p.size);
+                p.y -= p.speed;
+                if (p.y + p.size < 0) {
+                    p.y = canvas.height;
+                    p.x = Math.random() * canvas.width;
+                    p.color = COLORS[Math.floor(Math.random() * COLORS.length)];
+                }
+            });
+            requestAnimationFrame(draw);
+        }
+
+        window.addEventListener('resize', () => { resize(); initPixels(); });
+        resize();
+        initPixels();
+        draw();
+    })();
+</script>
 </body>
 </html>
