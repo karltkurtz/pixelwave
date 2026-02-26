@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PixelWave Admin</title>
+    <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Nunito:wght@400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/static/style.css?v=6">
+    <style>
+        .admin-card {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 24px;
+            margin-bottom: 20px;
+        }
+        .admin-title {
+            font-family: 'Press Start 2P', monospace;
+            font-size: 8px;
+            color: var(--amber);
+            letter-spacing: 1px;
+            margin-bottom: 20px;
+        }
+        .slider-row {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 16px;
+        }
+        .slider-label {
+            font-family: 'Press Start 2P', monospace;
+            font-size: 6px;
+            color: var(--muted);
+            width: 100px;
+            flex-shrink: 0;
+        }
+        .slider-value {
+            font-family: 'Press Start 2P', monospace;
+            font-size: 6px;
+            color: var(--amber);
+            width: 60px;
+            text-align: right;
+            flex-shrink: 0;
+        }
+        input[type=range] {
+            flex: 1;
+            -webkit-appearance: none;
+            height: 4px;
+            border-radius: 2px;
+            background: rgba(159,122,234,0.4);
+            outline: none;
+        }
+        input[type=range]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            width: 16px;
+            height: 16px;
+            border-radius: 50%;
+            background: #9f7aea;
+            cursor: pointer;
+        }
+        .admin-btn {
+            font-family: 'Press Start 2P', monospace;
+            font-size: 7px;
+            padding: 10px 16px;
+            border-radius: 8px;
+            border: none;
+            cursor: pointer;
+            letter-spacing: 0.5px;
+            margin-right: 8px;
+            margin-top: 8px;
+        }
+        .btn-apply { background: rgba(79,209,197,0.2); color: var(--teal); border: 1px solid rgba(79,209,197,0.4); }
+        .btn-auto { background: rgba(246,173,85,0.2); color: var(--amber); border: 1px solid rgba(246,173,85,0.4); }
+        .btn-danger { background: rgba(255,100,100,0.2); color: #ff6464; border: 1px solid rgba(255,100,100,0.4); }
+        .status-msg { font-family: 'Press Start 2P', monospace; font-size: 6px; color: var(--teal); margin-top: 12px; min-height: 16px; }
+        .password-wrap { margin-bottom: 24px; }
+        .password-wrap input {
+            font-family: 'Press Start 2P', monospace;
+            font-size: 8px;
+            padding: 10px;
+            border-radius: 8px;
+            background: rgba(255,255,255,0.05);
+            border: 1px solid var(--border);
+            color: var(--text);
+            width: 200px;
+        }
+    </style>
+</head>
+<body>
+<div id="bg-layer"></div>
+<div class="container" style="max-width: 600px; padding: 40px 16px;">
+    <div style="font-family:'Press Start 2P',monospace; font-size:12px; color:var(--amber); margin-bottom:32px; text-align:center;">⚙️ ADMIN</div>
+
+    <div class="admin-card password-wrap">
+        <div class="admin-title">🔑 PASSWORD</div>
+        <input type="password" id="admin-password" placeholder="Enter password..." />
+    </div>
+
+    <div class="admin-card">
+        <div class="admin-title">📷 CAMERA CONTROLS</div>
+        <div class="slider-row">
+            <span class="slider-label">EXPOSURE</span>
+            <input type="range" id="exposure" min="100" max="100000" value="20000" oninput="document.getElementById('exposure-val').textContent=this.value+'μs'">
+            <span class="slider-value" id="exposure-val">20000μs</span>
+        </div>
+        <div class="slider-row">
+            <span class="slider-label">GAIN</span>
+            <input type="range" id="gain" min="1" max="16" step="0.1" value="2" oninput="document.getElementById('gain-val').textContent=parseFloat(this.value).toFixed(1)">
+            <span class="slider-value" id="gain-val">2.0</span>
+        </div>
+        <div class="slider-row">
+            <span class="slider-label">BRIGHTNESS</span>
+            <input type="range" id="brightness" min="-1" max="1" step="0.05" value="0" oninput="document.getElementById('brightness-val').textContent=parseFloat(this.value).toFixed(2)">
+            <span class="slider-value" id="brightness-val">0.00</span>
+        </div>
+        <div class="slider-row">
+            <span class="slider-label">CONTRAST</span>
+            <input type="range" id="contrast" min="0" max="4" step="0.1" value="1" oninput="document.getElementById('contrast-val').textContent=parseFloat(this.value).toFixed(1)">
+            <span class="slider-value" id="contrast-val">1.0</span>
+        </div>
+        <div class="slider-row">
+            <span class="slider-label">SATURATION</span>
+            <input type="range" id="saturation" min="0" max="4" step="0.1" value="1" oninput="document.getElementById('saturation-val').textContent=parseFloat(this.value).toFixed(1)">
+            <span class="slider-value" id="saturation-val">1.0</span>
+        </div>
+        <button class="admin-btn btn-apply" onclick="applyCamera()">APPLY</button>
+        <button class="admin-btn btn-auto" onclick="setAutoCamera()">AUTO</button>
+        <div class="status-msg" id="camera-status"></div>
+    </div>
+
+    <div class="admin-card">
+        <div class="admin-title">🏠 HOME STATUS</div>
+        <button class="admin-btn btn-apply" onclick="setHome(true)">SET HOME</button>
+        <button class="admin-btn btn-danger" onclick="setHome(false)">SET AWAY</button>
+        <div class="status-msg" id="home-status"></div>
+    </div>
+</div>
+
+<script>
+    function getPassword() {
+        return document.getElementById('admin-password').value;
+    }
+
+    function showStatus(id, msg, ok) {
+        const el = document.getElementById(id);
+        el.textContent = msg;
+        el.style.color = ok ? 'var(--teal)' : '#ff6464';
+        setTimeout(() => el.textContent = '', 3000);
+    }
+
+    async function applyCamera() {
+        const res = await fetch('/admin/camera', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({
+                password: getPassword(),
+                exposure: document.getElementById('exposure').value,
+                gain: document.getElementById('gain').value,
+                brightness: document.getElementById('brightness').value,
+                contrast: document.getElementById('contrast').value,
+                saturation: document.getElementById('saturation').value
+            })
+        });
+        const data = await res.json();
+        showStatus('camera-status', res.ok ? 'APPLIED ✓' : data.detail || 'ERROR', res.ok);
+    }
+
+    async function setAutoCamera() {
+        const res = await fetch('/admin/camera', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({ password: getPassword(), auto: true })
+        });
+        showStatus('camera-status', res.ok ? 'AUTO MODE ✓' : 'ERROR', res.ok);
+    }
+
+    async function setHome(home) {
+        const res = await fetch('/admin/home', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({ password: getPassword(), home: home })
+        });
+        showStatus('home-status', res.ok ? (home ? 'HOME ✓' : 'AWAY ✓') : 'ERROR', res.ok);
+    }
+</script>
+</body>
+</html>

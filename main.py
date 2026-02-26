@@ -122,8 +122,11 @@ VISITORS_FILE = "visitors.json"
 def load_visitors():
     if os.path.exists(VISITORS_FILE):
         with open(VISITORS_FILE) as f:
-            return json.load(f)
-    return {"total": 0, "unique_ips": []}
+            data = json.load(f)
+            if "recent_locations" not in data:
+                data["recent_locations"] = []
+            return data
+    return {"total": 0, "unique_ips": [], "recent_locations": []}
 
 def save_visitors():
     with open(VISITORS_FILE, "w") as f:
@@ -304,14 +307,42 @@ async def startup_event():
     boot_animation()
     asyncio.create_task(session_timer())
 
+def get_location(ip):
+    try:
+        if ip in ("127.0.0.1", "localhost") or ip.startswith("10.") or ip.startswith("192.168."):
+            return None
+        url = f"http://ip-api.com/json/{ip}?fields=city,country,status"
+        with urllib.request.urlopen(url, timeout=2) as res:
+            data = json.loads(res.read())
+            if data.get("status") == "success":
+                city = data.get("city", "")
+                country = data.get("country", "")
+                if city and country:
+                    return f"{city}, {country}"
+                elif country:
+                    return country
+    except Exception:
+        pass
+    return None
+
 @app.get("/")
 async def root(request: Request):
-    ip = request.headers.get("x-forwarded-for", request.client.host)
+    ip = request.headers.get("x-forwarded-for", request.client.host).split(",")[0].strip()
     visitors["total"] += 1
-    if ip not in visitors["unique_ips"]:
+    is_new = ip not in visitors["unique_ips"]
+    if is_new:
         visitors["unique_ips"].append(ip)
+        location = await asyncio.get_event_loop().run_in_executor(None, get_location, ip)
+        if location and location not in visitors["recent_locations"]:
+            visitors["recent_locations"].insert(0, location)
+            visitors["recent_locations"] = visitors["recent_locations"][:5]
     save_visitors()
-    await broadcast({"type": "visitor_count", "total": visitors["total"], "unique": len(visitors["unique_ips"])})
+    await broadcast({
+        "type": "visitor_count",
+        "total": visitors["total"],
+        "unique": len(visitors["unique_ips"]),
+        "locations": visitors["recent_locations"]
+    })
     with open("static/index.html") as f:
         content = f.read()
     return HTMLResponse(content, headers={
@@ -323,7 +354,8 @@ async def root(request: Request):
 async def get_visitors():
     return {
         "total": visitors["total"],
-        "unique": len(visitors["unique_ips"])
+        "unique": len(visitors["unique_ips"]),
+        "locations": visitors["recent_locations"]
     }
 
 @app.get("/donate")
@@ -432,6 +464,35 @@ async def post_shoutout(payload: dict):
     save_shoutout()
     await broadcast({"type": "shoutout", "name": shoutout["name"], "label": shoutout["label"]})
     return {"status": "ok"}
+
+@app.post("/admin/camera")
+async def set_camera(payload: dict):
+    if payload.get("password") != ADMIN_PASSWORD:
+        raise HTTPException(status_code=401, detail="Unauthorized")
+    controls = {}
+    if "exposure" in payload:
+        controls["AeEnable"] = False
+        controls["ExposureTime"] = int(payload["exposure"])
+    if "gain" in payload:
+        controls["AnalogueGain"] = float(payload["gain"])
+    if "brightness" in payload:
+        controls["Brightness"] = float(payload["brightness"])
+    if "contrast" in payload:
+        controls["Contrast"] = float(payload["contrast"])
+    if "saturation" in payload:
+        controls["Saturation"] = float(payload["saturation"])
+    if "auto" in payload and payload["auto"]:
+        controls["AeEnable"] = True
+        controls["AwbEnable"] = True
+    if controls and camera_available:
+        picam2.set_controls(controls)
+    return {"status": "ok"}
+
+@app.get("/admin")
+async def admin_page():
+    with open("static/admin.html") as f:
+        content = f.read()
+    return HTMLResponse(content)
 
 @app.post("/admin/home")
 async def set_home(payload: dict):
