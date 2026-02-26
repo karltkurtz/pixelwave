@@ -126,6 +126,7 @@
         <button class="admin-btn btn-apply" onclick="applyCamera()">APPLY</button>
         <button class="admin-btn btn-auto" onclick="setAutoCamera()">AUTO</button>
         <div class="status-msg" id="camera-status"></div>
+        <div id="camera-mode" style="font-family:'Press Start 2P',monospace; font-size:6px; margin-top:8px; color:var(--muted);">MODE: UNKNOWN</div>
     </div>
 
     <div class="admin-card">
@@ -133,6 +134,7 @@
         <button class="admin-btn btn-apply" onclick="setHome(true)">SET HOME</button>
         <button class="admin-btn btn-danger" onclick="setHome(false)">SET AWAY</button>
         <div class="status-msg" id="home-status"></div>
+        <div id="home-mode" style="font-family:'Press Start 2P',monospace; font-size:6px; margin-top:8px; color:var(--muted);">STATUS: UNKNOWN</div>
     </div>
 </div>
 
@@ -146,6 +148,17 @@
         el.textContent = msg;
         el.style.color = ok ? 'var(--teal)' : '#ff6464';
         setTimeout(() => el.textContent = '', 3000);
+    }
+
+    function setCameraMode(auto) {
+        const el = document.getElementById('camera-mode');
+        if (auto) {
+            el.textContent = '● AUTO MODE IS RUNNING';
+            el.style.color = 'var(--teal)';
+        } else {
+            el.textContent = '● MANUAL MODE IS RUNNING';
+            el.style.color = '#9f7aea';
+        }
     }
 
     async function applyCamera() {
@@ -162,6 +175,7 @@
             })
         });
         const data = await res.json();
+        if (res.ok) setCameraMode(false);
         showStatus('camera-status', res.ok ? 'APPLIED ✓' : data.detail || 'ERROR', res.ok);
     }
 
@@ -171,7 +185,19 @@
             headers: {'Content-Type': 'application/json'},
             body: JSON.stringify({ password: getPassword(), auto: true })
         });
+        if (res.ok) setCameraMode(true);
         showStatus('camera-status', res.ok ? 'AUTO MODE ✓' : 'ERROR', res.ok);
+    }
+
+    function setHomeMode(home) {
+        const el = document.getElementById('home-mode');
+        if (home) {
+            el.textContent = '● KARL IS HOME';
+            el.style.color = 'var(--teal)';
+        } else {
+            el.textContent = '● KARL IS AWAY';
+            el.style.color = '#ff6464';
+        }
     }
 
     async function setHome(home) {
@@ -180,6 +206,7 @@
             headers: {'Content-Type': 'application/json'},
             body: JSON.stringify({ password: getPassword(), home: home })
         });
+        if (res.ok) setHomeMode(home);
         showStatus('home-status', res.ok ? (home ? 'HOME ✓' : 'AWAY ✓') : 'ERROR', res.ok);
     }
 </script>
