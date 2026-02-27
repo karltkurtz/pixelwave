@@ -50,14 +50,24 @@ pixelwave/
 2. `git push origin master` from Mac
 3. On Pi: `cd ~/litebrite && git pull && sudo systemctl restart litebrite`
 
-## Auto-Push Rule
-After every code change, automatically stage, commit, and push to GitHub:
-```
-git add <changed files>
-git commit -m "<description>"
-git push origin master
-```
-Do this without waiting to be asked. Karl will manually pull on the Pi.
+## Deploy & Commit Workflow
+After every code change:
+1. **SCP changed files to the Pi** and restart the server:
+   ```
+   scp -i ~/.ssh/pixelwave_key <file> karltkurtz@10.0.0.81:~/litebrite/<path>
+   ssh -i ~/.ssh/pixelwave_key karltkurtz@10.0.0.81 "sudo systemctl restart litebrite"
+   ```
+2. **Wait 10 seconds**, then **open pigarage.com in a Safari Private Window** so Karl can review:
+   ```
+   sleep 10 && osascript -e 'tell application "Safari"' -e 'activate' -e 'tell application "System Events" to keystroke "n" using {command down, shift down}' -e 'delay 1' -e 'tell front window to set current tab to (make new tab with properties {URL:"https://www.pigarage.com"})' -e 'end tell'
+   ```
+3. **Do NOT commit** until Karl confirms it looks good.
+4. When Karl says **"commit"**, then run:
+   ```
+   git add <changed files>
+   git commit -m "<relevant description>"
+   git push origin master
+   ```
 
 ## Systemd Services
 - **Main app:** `sudo systemctl restart litebrite`
