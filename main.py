@@ -185,9 +185,16 @@ except Exception as e:
     print(f"LED hardware not available: {e}")
     HAS_LEDS = False
 
+def snake_index(index: int) -> int:
+    row = index // 16
+    col = index % 16
+    if row % 2 == 0:
+        col = 15 - col
+    return row * 16 + col
+
 def set_physical_led(index: int, r: int, g: int, b: int):
     if HAS_LEDS:
-        strip.setPixelColor(index, ws281x.Color(r, g, b))
+        strip.setPixelColor(snake_index(index), ws281x.Color(r, g, b))
         strip.show()
 
 def clear_physical_leds():
