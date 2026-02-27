@@ -50,6 +50,15 @@ pixelwave/
 2. `git push origin master` from Mac
 3. On Pi: `cd ~/litebrite && git pull && sudo systemctl restart litebrite`
 
+## Auto-Push Rule
+After every code change, automatically stage, commit, and push to GitHub:
+```
+git add <changed files>
+git commit -m "<description>"
+git push origin master
+```
+Do this without waiting to be asked. Karl will manually pull on the Pi.
+
 ## Systemd Services
 - **Main app:** `sudo systemctl restart litebrite`
 - **Cloudflare tunnel:** `sudo systemctl restart cloudflared`
