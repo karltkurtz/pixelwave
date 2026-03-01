@@ -117,7 +117,7 @@
                 <div class="grid-label" style="text-align:center; line-height:2;">CLICK INDIVIDUAL CELLS OR<br>HOLD AND DRAG TO DRAW</div>
                 <div id="led-grid"></div>
             </div>
-            <button class="btn btn-finish" style="width:100%; margin-top:12px;" onclick="finish()">DONE</button>
+            <button class="btn btn-finish" id="finish-btn" style="width:100%; margin-top:12px; display:none;" onclick="finish()">DONE</button>
         </div>
     </div>
 
@@ -634,10 +634,12 @@ function getSeasonalTheme() {
             document.getElementById('back-btn').style.display = 'none';
             if (youAreInControl) {
                 userControls.style.display = 'flex';
+                document.getElementById('finish-btn').style.display = 'block';
                 statusEl2.textContent = 'You have control!';
                 statusEl2.style.color = 'var(--green)';
             } else {
                 userControls.style.display = 'none';
+                document.getElementById('finish-btn').style.display = 'none';
                 statusEl2.textContent = 'Board is in use.';
                 statusEl2.style.color = 'var(--coral)';
             }
@@ -646,6 +648,7 @@ function getSeasonalTheme() {
        function setSessionIdle() {
             iAmActive = false;
             userControls.style.display = 'none';
+            document.getElementById('finish-btn').style.display = 'none';
             timerEl.textContent = '';
             claimBtn.disabled = false;
             claimBtn.style.opacity = '1';
