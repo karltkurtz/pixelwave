@@ -178,9 +178,12 @@ except Exception as e:
 def snake_index(index: int) -> int:
     row = index // 16
     col = index % 16
-    if row % 2 == 0:
-        col = 15 - col
-    return row * 16 + col
+    # Rotate 90° CW to compensate for physical matrix being oriented 90° CCW
+    new_row = col
+    new_col = 15 - row
+    if new_row % 2 == 0:
+        new_col = 15 - new_col
+    return new_row * 16 + new_col
 
 def set_physical_led(index: int, r: int, g: int, b: int):
     if HAS_LEDS:
