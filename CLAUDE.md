@@ -122,18 +122,23 @@ Located in `static/templates.js`. Categories:
 - Tweak 3D viewport orbiting and panning (disabled, revisit after matrix upgrade)
 - Fill tool
 - A "how to use" tooltip or mini guide for first-time visitors
-- Visitor count shows where visitors are from
 - Allow visitors to vote/react to current drawing with emojis (👍❤️🔥)
 - Add Animals pixel art templates
-- Add floating pixel background to all other pages
 - Add sound effects — soft click when painting, chime when finishing
 - Show live count of how many people are currently watching
-- Rainbow wave animation button on //artwork — button not showing, needs investigation
+- ANIMATE button (animations: Matrix, Rainbow Wave, Twinkle, Fire, Police Lights) — built but disabled (under construction) pending polish
 - Site polish
 
 ## Known Issues
-- Rainbow wave button on //artwork page not rendering (JS likely not re-running after cache bust)
 - Cloudflare Tunnel drops persistent MJPEG streams after ~30s — using snapshot polling instead
+
+## Recently Completed
+- Admin page: added ← BACK TO LIVE STREAM nav link
+- Admin page: added password-protected CLEAR ARTWORK and CLEAR GUESTBOOK buttons
+- `POST /leds/batch` endpoint: sets multiple LEDs in one `strip.show()` call (used by animations)
+- Visitor footer redesigned: two lines — total visits + "Most recent visit from [location]"
+- Main page layout reordered: nav buttons and past artwork link moved below live stream and artboard section
+- DONE button on draw overlay hidden until user claims the artboard
 
 ## Instagram
 - Handle: `@Pi_Garage`
