@@ -58,12 +58,13 @@ CAMERA_PI_URL = "http://10.0.0.8:8080/?action=snapshot"
 @app.get("/snapshot")
 async def snapshot():
     try:
-        with urllib.request.urlopen(CAMERA_PI_URL, timeout=2) as res:
-            frame = res.read()
-        return Response(content=frame, media_type="image/jpeg", headers={
-            "Cache-Control": "no-cache, no-store",
-            "Access-Control-Allow-Origin": "*"
-        })
+        import httpx
+        async with httpx.AsyncClient(timeout=2) as client:
+            res = await client.get(CAMERA_PI_URL)
+            return Response(content=res.content, media_type="image/jpeg", headers={
+                "Cache-Control": "no-cache, no-store",
+                "Access-Control-Allow-Origin": "*"
+            })
     except Exception:
         return Response(status_code=503)
 app.mount("/static", StaticFiles(directory="static"), name="static")
