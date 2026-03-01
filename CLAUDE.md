@@ -138,7 +138,10 @@ Located in `static/templates.js`. Categories:
 - `POST /leds/batch` endpoint: sets multiple LEDs in one `strip.show()` call (used by animations)
 - Visitor footer redesigned: two lines — total visits + "Most recent visit from [location]"
 - Main page layout reordered: nav buttons and past artwork link moved below live stream and artboard section
+- Added spacing between USE THE ARTBOARD button and nav buttons
 - DONE button on draw overlay hidden until user claims the artboard
+- DONE popup: replaced CANCEL with NOT DONE button
+- Mobile fix: set finish name input font-size to 16px to prevent iOS Safari auto-zoom
 
 ## Instagram
 - Handle: `@Pi_Garage`
