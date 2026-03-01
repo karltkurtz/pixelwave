@@ -414,7 +414,8 @@
         // =====================
         // WEBSOCKET
         // =====================
-        function showUnderConstruction() {
+        function showUnderConstruction(msg) {
+            document.getElementById('construction-msg').textContent = msg || 'The 3D view is being reworked and will be back soon!';
             document.getElementById('construction-popup').style.display = 'block';
         }
 function getSeasonalTheme() {
@@ -784,36 +785,54 @@ function getSeasonalTheme() {
 let animRunning = false;
 let animController = null;
 let matrixBoard = null;
-let matrixDrops = null;
 
 function animBtnClick() {
-    document.getElementById('animate-popup').style.display = 'flex';
+    showUnderConstruction('ANIMATE is being reworked and will be back soon!');
+}
+
+function runAnim(tickFn, intervalMs) {
+    if (animInterval) { clearInterval(animInterval); animInterval = null; }
+    if (animController) { animController.abort(); animController = null; }
+    animRunning = true;
+    animController = new AbortController();
+    document.getElementById('color-picker').disabled = true;
+    matrixBoard = new Array(NUM_LEDS).fill(null).map(() => ({r: 0, g: 0, b: 0}));
+    fetch('/clear', { method: 'POST' });
+    animInterval = setInterval(() => {
+        if (!matrixBoard) return;
+        const changes = tickFn();
+        if (!changes || changes.length === 0) return;
+        changes.forEach(({index, r, g, b}) => {
+            grid.children[index].style.background = (r || g || b) ? `rgb(${r},${g},${b})` : '';
+        });
+        fetch('/leds/batch', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({leds: changes}),
+            signal: animController.signal
+        }).catch(() => {});
+    }, intervalMs);
+}
+
+function stopAnim() {
+    animRunning = false;
+    clearInterval(animInterval);
+    animInterval = null;
+    if (animController) { animController.abort(); animController = null; }
+    matrixBoard = null;
+    document.getElementById('color-picker').disabled = false;
 }
 
 function startMatrix() {
     document.getElementById('animate-popup').style.display = 'none';
-    startAnim();
-}
-
-function startAnim() {
-    animRunning = true;
-    animController = new AbortController();
-    document.getElementById('color-picker').disabled = true;
-
-    matrixBoard = new Array(NUM_LEDS).fill(null).map(() => ({r: 0, g: 0, b: 0}));
-    matrixDrops = Array.from({length: 16}, (_, col) => ({
-        col,
-        head: -Math.floor(Math.random() * 16),
+    const drops = Array.from({length: 16}, (_, col) => ({
+        col, head: -Math.floor(Math.random() * 16),
         tailLen: 4 + Math.floor(Math.random() * 5),
-        tick: 0,
-        speed: Math.random() < 0.4 ? 2 : 1,
+        tick: 0, speed: Math.random() < 0.4 ? 2 : 1,
     }));
-
-    fetch('/clear', { method: 'POST' });
-
-    animInterval = setInterval(() => {
+    runAnim(() => {
         const changes = [];
-        matrixDrops.forEach(drop => {
+        drops.forEach(drop => {
             drop.tick++;
             if (drop.tick < drop.speed) return;
             drop.tick = 0;
@@ -827,39 +846,130 @@ function startAnim() {
                 const idx = row * 16 + drop.col;
                 const dist = drop.head - row;
                 let nr, ng, nb;
-                if (dist === 0)                        { nr = 180; ng = 255; nb = 180; }
-                else if (dist === 1)                   { nr = 0;   ng = 255; nb = 50;  }
-                else if (dist === 2)                   { nr = 0;   ng = 200; nb = 0;   }
-                else if (dist === 3)                   { nr = 0;   ng = 130; nb = 0;   }
-                else if (dist === 4)                   { nr = 0;   ng = 70;  nb = 0;   }
-                else if (dist > 4 && dist <= drop.tailLen) { nr = 0; ng = 25; nb = 0; }
-                else                                   { nr = 0;   ng = 0;   nb = 0;   }
+                if (dist === 0)                            { nr = 180; ng = 255; nb = 180; }
+                else if (dist === 1)                       { nr = 0;   ng = 255; nb = 50;  }
+                else if (dist === 2)                       { nr = 0;   ng = 200; nb = 0;   }
+                else if (dist === 3)                       { nr = 0;   ng = 130; nb = 0;   }
+                else if (dist === 4)                       { nr = 0;   ng = 70;  nb = 0;   }
+                else if (dist > 4 && dist <= drop.tailLen) { nr = 0;   ng = 25;  nb = 0;   }
+                else                                       { nr = 0;   ng = 0;   nb = 0;   }
                 const cur = matrixBoard[idx];
                 if (cur.r !== nr || cur.g !== ng || cur.b !== nb) {
                     matrixBoard[idx] = {r: nr, g: ng, b: nb};
                     changes.push({index: idx, r: nr, g: ng, b: nb});
-                    grid.children[idx].style.background = (nr || ng || nb) ? `rgb(${nr},${ng},${nb})` : '';
                 }
             }
         });
-        if (changes.length === 0) return;
-        fetch('/leds/batch', {
-            method: 'POST',
-            headers: {'Content-Type': 'application/json'},
-            body: JSON.stringify({leds: changes}),
-            signal: animController.signal
-        }).catch(() => {});
+        return changes;
     }, 120);
 }
 
-function stopAnim() {
-    animRunning = false;
-    clearInterval(animInterval);
-    animInterval = null;
-    if (animController) { animController.abort(); animController = null; }
-    matrixBoard = null;
-    matrixDrops = null;
-    document.getElementById('color-picker').disabled = false;
+function hslToRgb(h) {
+    h /= 360;
+    const a = Math.min(h * 6, 1 - h * 6 < 0 ? h * 6 - Math.floor(h * 6) : 1 - (h * 6 - Math.floor(h * 6)));
+    const l = 0.4, s = 1, m = s * Math.min(l, 1 - l);
+    const f = n => Math.round((l - m * Math.max(-1, Math.min((n + h * 12) % 12 - 3, 9 - (n + h * 12) % 12, 1))) * 255);
+    return {r: f(0), g: f(8), b: f(4)};
+}
+
+function startRainbow() {
+    document.getElementById('animate-popup').style.display = 'none';
+    let offset = 0;
+    runAnim(() => {
+        const changes = [];
+        for (let i = 0; i < NUM_LEDS; i++) {
+            const {r, g, b} = hslToRgb((i / NUM_LEDS * 360 + offset) % 360);
+            const cur = matrixBoard[i];
+            if (cur.r !== r || cur.g !== g || cur.b !== b) {
+                matrixBoard[i] = {r, g, b};
+                changes.push({index: i, r, g, b});
+            }
+        }
+        offset = (offset + 8) % 360;
+        return changes;
+    }, 80);
+}
+
+function startTwinkle() {
+    document.getElementById('animate-popup').style.display = 'none';
+    runAnim(() => {
+        const changes = [];
+        const activated = new Set();
+        for (let n = 0; n < 5 + Math.floor(Math.random() * 8); n++) {
+            const idx = Math.floor(Math.random() * NUM_LEDS);
+            const r = 150 + Math.floor(Math.random() * 105);
+            const g = 150 + Math.floor(Math.random() * 105);
+            const b = 150 + Math.floor(Math.random() * 105);
+            matrixBoard[idx] = {r, g, b};
+            changes.push({index: idx, r, g, b});
+            activated.add(idx);
+        }
+        for (let i = 0; i < NUM_LEDS; i++) {
+            if (activated.has(i)) continue;
+            const cur = matrixBoard[i];
+            if (cur.r > 2 || cur.g > 2 || cur.b > 2) {
+                const nr = Math.floor(cur.r * 0.75);
+                const ng = Math.floor(cur.g * 0.75);
+                const nb = Math.floor(cur.b * 0.75);
+                matrixBoard[i] = {r: nr, g: ng, b: nb};
+                changes.push({index: i, r: nr, g: ng, b: nb});
+            } else if (cur.r || cur.g || cur.b) {
+                matrixBoard[i] = {r: 0, g: 0, b: 0};
+                changes.push({index: i, r: 0, g: 0, b: 0});
+            }
+        }
+        return changes;
+    }, 100);
+}
+
+function startFire() {
+    document.getElementById('animate-popup').style.display = 'none';
+    const heat = new Uint8Array(NUM_LEDS);
+    function heatColor(h) {
+        if (h < 64)  return {r: h * 4,        g: 0,          b: 0};
+        if (h < 128) return {r: 255,           g: (h-64)*4,   b: 0};
+        if (h < 192) return {r: 255,           g: 255,        b: (h-128)*4};
+        return             {r: 255,            g: 255,        b: 255};
+    }
+    runAnim(() => {
+        for (let col = 0; col < 16; col++)
+            heat[15 * 16 + col] = 180 + Math.floor(Math.random() * 75);
+        for (let row = 0; row < 15; row++)
+            for (let col = 0; col < 16; col++)
+                heat[row * 16 + col] = Math.max(0,
+                    Math.floor((heat[(row+1)*16+col] + heat[(row+1)*16+(col-1+16)%16] + heat[(row+1)*16+(col+1)%16]) / 3)
+                    - Math.floor(Math.random() * 25));
+        const changes = [];
+        for (let i = 0; i < NUM_LEDS; i++) {
+            const {r, g, b} = heatColor(heat[i]);
+            const cur = matrixBoard[i];
+            if (cur.r !== r || cur.g !== g || cur.b !== b) {
+                matrixBoard[i] = {r, g, b};
+                changes.push({index: i, r, g, b});
+            }
+        }
+        return changes;
+    }, 80);
+}
+
+function startPolice() {
+    document.getElementById('animate-popup').style.display = 'none';
+    let phase = 0;
+    runAnim(() => {
+        phase = (phase + 1) % 4;
+        const changes = [];
+        for (let i = 0; i < NUM_LEDS; i++) {
+            const left = (i % 16) < 8;
+            const r = (left ? phase < 2 : phase >= 2) ? 255 : 0;
+            const b = (left ? phase >= 2 : phase < 2) ? 255 : 0;
+            const cur = matrixBoard[i];
+            if (cur.r !== r || cur.g !== 0 || cur.b !== b) {
+                matrixBoard[i] = {r, g: 0, b};
+                changes.push({index: i, r, g: 0, b});
+            }
+        }
+        return changes;
+    }, 150);
 }
 
         function randomColor() {
@@ -1222,12 +1332,16 @@ function stopAnim() {
         </div>
         <div style="display:grid; grid-template-columns:repeat(2,1fr); gap:10px;">
             <button class="btn btn-anim" onclick="startMatrix()">💚 THE MATRIX</button>
+            <button class="btn btn-anim" onclick="startRainbow()">🌈 RAINBOW WAVE</button>
+            <button class="btn btn-anim" onclick="startTwinkle()">✨ TWINKLE</button>
+            <button class="btn btn-anim" onclick="startFire()">🔥 FIRE</button>
+            <button class="btn btn-anim" onclick="startPolice()">🚔 POLICE LIGHTS</button>
         </div>
     </div>
 </div>
 <div id="construction-popup" style="display:none; position:fixed; top:50%; left:50%; transform:translate(-50%,-50%); background:var(--surface); border:1px solid var(--border); border-radius:12px; padding:24px; z-index:2000; text-align:center; max-width:280px; box-shadow:0 8px 32px rgba(0,0,0,0.5);">
     <div style="font-family:'Press Start 2P',monospace; font-size:8px; color:var(--amber); margin-bottom:12px; letter-spacing:1px;">🚧 UNDER CONSTRUCTION</div>
-    <div style="font-size:13px; color:var(--muted); font-weight:600; margin-bottom:16px; line-height:1.7;">The 3D view is being reworked and will be back soon!</div>
+    <div id="construction-msg" style="font-size:13px; color:var(--muted); font-weight:600; margin-bottom:16px; line-height:1.7;">The 3D view is being reworked and will be back soon!</div>
     <button onclick="document.getElementById('construction-popup').style.display='none'" style="font-family:'Press Start 2P',monospace; font-size:7px; padding:8px 14px; border-radius:6px; background:rgba(79,209,197,0.1); color:var(--teal); border:1px solid rgba(79,209,197,0.3); cursor:pointer;">✕ CLOSE</button>
 </div>
 <div id="finish-popup" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.7); z-index:2000; align-items:center; justify-content:center;">

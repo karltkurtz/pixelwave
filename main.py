@@ -509,6 +509,24 @@ async def set_home(payload: dict):
     await broadcast({"type": "home_status", "home": home_status["home"]})
     return {"status": "ok", "home": home_status["home"]}
 
+@app.post("/admin/artwork/clear")
+async def clear_artwork(payload: dict):
+    global artwork_history
+    if payload.get("password") != ADMIN_PASSWORD:
+        raise HTTPException(status_code=401, detail="Unauthorized")
+    artwork_history = []
+    save_artwork()
+    return {"status": "ok"}
+
+@app.post("/admin/guestbook/clear")
+async def clear_guestbook_entries(payload: dict):
+    global guestbook
+    if payload.get("password") != ADMIN_PASSWORD:
+        raise HTTPException(status_code=401, detail="Unauthorized")
+    guestbook = []
+    save_guestbook()
+    return {"status": "ok"}
+
 @app.websocket("/ws")
 async def websocket_endpoint(websocket: WebSocket):
     await websocket.accept()
