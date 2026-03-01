@@ -47,18 +47,19 @@ pixelwave/
 └── guestbook.json           # Guestbook entries
 ```
 
-## Deployment Workflow
-1. Make changes on Mac in `/Users/karlkurtz/Documents/programs/pixelwave`
-2. `git push origin master` from Mac
-3. On Pi: `cd ~/litebrite && git pull && sudo systemctl restart litebrite`
-
 ## Deploy & Commit Workflow
 After every code change:
-1. **SCP changed files to the Pi** and restart the server:
+1. **SCP to main Pi** and restart:
    ```
    scp -i ~/.ssh/pixelwave_key <file> karltkurtz@10.0.0.81:~/litebrite/<path>
    ssh -i ~/.ssh/pixelwave_key karltkurtz@10.0.0.81 "sudo systemctl restart litebrite"
    ```
+   **SCP to camera Pi** (for `stream.py` only) and restart:
+   ```
+   scp -i ~/.ssh/pixelwave_key stream.py karltkurtz@10.0.0.8:~/stream.py
+   ssh -i ~/.ssh/pixelwave_key karltkurtz@10.0.0.8 "sudo kill \$(sudo ss -tlnp | grep 8080 | grep -oP 'pid=\K[0-9]+') 2>/dev/null; sleep 1; nohup python3 ~/stream.py > ~/stream.log 2>&1 &"
+   ```
+   Note: `stream.py` lives at `~/stream.py` on the camera Pi (not inside `~/litebrite/`).
 2. **Wait 10 seconds**, then **open pigarage.com in a Safari Private Window** so Karl can review:
    ```
    sleep 10 && osascript -e 'tell application "Safari"' -e 'activate' -e 'tell application "System Events" to keystroke "n" using {command down, shift down}' -e 'delay 1' -e 'tell front window to set current tab to (make new tab with properties {URL:"https://www.pigarage.com"})' -e 'end tell'
@@ -98,7 +99,8 @@ def snake_index(index: int) -> int:
 - `/snapshot` endpoint serves from `latest_frame` (no per-request fan-out to camera Pi)
 - Snapshot polling in JS every 150ms (~6-7fps delivery)
 - **Watch out:** camera Pi's BaseHTTP server is single-threaded — never make concurrent requests to it directly. Always go through the main Pi's cached `/snapshot`.
-- Camera controls in `/admin/camera` are forwarded to `POST http://10.0.0.8:8080/controls` which calls `picam2.set_controls()`
+- Camera controls in `/admin/camera` are forwarded to `POST http://10.0.0.8:8080/controls`. MANUAL applies `set_controls()` with cam_lock. AUTO signals `auto_reset_event` so the capture loop fully recreates the Picamera2 instance (stop → close → new) for a guaranteed clean reset.
+- Camera starts in AUTO mode by default on every boot
 - Deploy to camera Pi: `scp -i ~/.ssh/pixelwave_key stream.py karltkurtz@10.0.0.8:~/stream.py` then restart (see Systemd Services)
 
 ### WebSocket Flow
@@ -141,6 +143,7 @@ Located in `static/templates.js`. Categories:
 - Cloudflare Tunnel drops persistent MJPEG streams after ~30s — using snapshot polling instead
 
 ## Recently Completed
+- **Camera admin controls:** MANUAL/AUTO mode switching with greyed-out inactive button (still clickable to switch back), sliders disabled in AUTO mode. AUTO does a full Picamera2 recreate (thread-safe via cam_lock + auto_reset_event) to guarantee clean AE reset.
 - **Camera Pi migration:** Moved camera from main Pi to dedicated Pi at `10.0.0.8:8080`. Fixed livestream by replacing per-request httpx proxy (overwhelmed single-threaded camera server) with background cache thread using `urllib.request`.
 - **LED orientation fix:** Physical matrix is mounted 90° CCW — fixed `snake_index()` to pre-rotate coordinates 90° CW before applying snake wiring. Affects all LED operations.
 - Admin page: added ← BACK TO LIVE STREAM nav link
