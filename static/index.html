@@ -102,6 +102,7 @@
                     </div>
                     <button class="btn btn-surprise" onclick="document.getElementById('pixel-art-popup').style.display='flex'">🎨 PIXEL ART GENERATOR</button>
                     <button class="btn btn-surprise" onclick="surpriseMe()">🎲 SURPRISE</button>
+                    <button class="btn btn-anim" id="anim-btn" onclick="animBtnClick()">ANIMATE</button>
                     <button class="btn btn-clear" onclick="clearBoard()">CLEAR</button>
                     <div style="display:flex; align-items:center; gap:10px; width:100%;">
                         <span style="font-family:'Press Start 2P',monospace; font-size:6px; color:var(--muted); white-space:nowrap;">BRIGHTNESS</span>
@@ -781,56 +782,84 @@ function getSeasonalTheme() {
 
         let animInterval = null;
 let animRunning = false;
+let animController = null;
+let matrixBoard = null;
+let matrixDrops = null;
 
-function toggleAnim() {
-    const btn = document.getElementById('anim-btn');
-    if (animRunning) {
-        stopAnim();
-    } else {
-        startAnim();
-    }
+function animBtnClick() {
+    document.getElementById('animate-popup').style.display = 'flex';
+}
+
+function startMatrix() {
+    document.getElementById('animate-popup').style.display = 'none';
+    startAnim();
 }
 
 function startAnim() {
     animRunning = true;
-    const btn = document.getElementById('anim-btn');
-    btn.textContent = 'STOP ANIM';
-    btn.classList.add('active');
+    animController = new AbortController();
     document.getElementById('color-picker').disabled = true;
-    let offset = 0;
+
+    matrixBoard = new Array(NUM_LEDS).fill(null).map(() => ({r: 0, g: 0, b: 0}));
+    matrixDrops = Array.from({length: 16}, (_, col) => ({
+        col,
+        head: -Math.floor(Math.random() * 16),
+        tailLen: 4 + Math.floor(Math.random() * 5),
+        tick: 0,
+        speed: Math.random() < 0.4 ? 2 : 1,
+    }));
+
+    fetch('/clear', { method: 'POST' });
+
     animInterval = setInterval(() => {
-        for (let i = 0; i < NUM_LEDS; i++) {
-            const hue = ((i / NUM_LEDS) * 360 + offset) % 360;
-            const {r, g, b} = hslToRgb(hue, 1, 0.5);
-            fetch(`/led/${i}`, {
-                method: 'POST',
-                headers: {'Content-Type': 'application/json'},
-                body: JSON.stringify({r, g, b})
-            });
-        }
-        offset = (offset + 10) % 360;
-    }, 150);
+        const changes = [];
+        matrixDrops.forEach(drop => {
+            drop.tick++;
+            if (drop.tick < drop.speed) return;
+            drop.tick = 0;
+            drop.head++;
+            if (drop.head - drop.tailLen > 15) {
+                drop.head = -Math.floor(Math.random() * 8);
+                drop.tailLen = 4 + Math.floor(Math.random() * 5);
+                drop.speed = Math.random() < 0.4 ? 2 : 1;
+            }
+            for (let row = 0; row < 16; row++) {
+                const idx = row * 16 + drop.col;
+                const dist = drop.head - row;
+                let nr, ng, nb;
+                if (dist === 0)                        { nr = 180; ng = 255; nb = 180; }
+                else if (dist === 1)                   { nr = 0;   ng = 255; nb = 50;  }
+                else if (dist === 2)                   { nr = 0;   ng = 200; nb = 0;   }
+                else if (dist === 3)                   { nr = 0;   ng = 130; nb = 0;   }
+                else if (dist === 4)                   { nr = 0;   ng = 70;  nb = 0;   }
+                else if (dist > 4 && dist <= drop.tailLen) { nr = 0; ng = 25; nb = 0; }
+                else                                   { nr = 0;   ng = 0;   nb = 0;   }
+                const cur = matrixBoard[idx];
+                if (cur.r !== nr || cur.g !== ng || cur.b !== nb) {
+                    matrixBoard[idx] = {r: nr, g: ng, b: nb};
+                    changes.push({index: idx, r: nr, g: ng, b: nb});
+                    grid.children[idx].style.background = (nr || ng || nb) ? `rgb(${nr},${ng},${nb})` : '';
+                }
+            }
+        });
+        if (changes.length === 0) return;
+        fetch('/leds/batch', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({leds: changes}),
+            signal: animController.signal
+        }).catch(() => {});
+    }, 120);
 }
 
 function stopAnim() {
     animRunning = false;
     clearInterval(animInterval);
     animInterval = null;
-    const btn = document.getElementById('anim-btn');
-    btn.textContent = 'ANIMATE';
-    btn.classList.remove('active');
+    if (animController) { animController.abort(); animController = null; }
+    matrixBoard = null;
+    matrixDrops = null;
     document.getElementById('color-picker').disabled = false;
-    fetch('/clear', { method: 'POST' });
-}
-
-function hslToRgb(h, s, l) {
-    h /= 360;
-    const a = s * Math.min(l, 1 - l);
-    const f = n => {
-        const k = (n + h * 12) % 12;
-        return l - a * Math.max(-1, Math.min(k - 3, 9 - k, 1));
-    };
-    return { r: Math.round(f(0) * 255), g: Math.round(f(8) * 255), b: Math.round(f(4) * 255) };
 }
 
         function randomColor() {
@@ -966,6 +995,7 @@ function hslToRgb(h, s, l) {
         }
 
         function clearBoard() {
+            if (animRunning) stopAnim();
             fetch('/clear', { method: 'POST' });
         }
 
@@ -1181,6 +1211,17 @@ function hslToRgb(h, s, l) {
             <div style="font-family:'Press Start 2P',monospace; font-size:7px; color:var(--muted); text-align:center; padding:20px; grid-column:span 2;">COMING SOON</div>
         </div>
         <div id="art-tab-holiday" class="art-tab-content" style="display:none; grid-template-columns:repeat(2,1fr); gap:10px;">
+        </div>
+    </div>
+</div>
+<div id="animate-popup" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.7); z-index:2000; align-items:center; justify-content:center;">
+    <div style="background:var(--surface); border:1px solid var(--border); border-radius:12px; padding:24px; max-width:520px; width:95%;">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
+            <div style="font-family:'Press Start 2P',monospace; font-size:8px; color:var(--amber); letter-spacing:1px;">✨ ANIMATE</div>
+            <button onclick="document.getElementById('animate-popup').style.display='none'" style="font-family:'Press Start 2P',monospace; font-size:7px; padding:6px 10px; border-radius:6px; background:rgba(255,255,255,0.05); color:var(--muted); border:1px solid var(--border); cursor:pointer;">✕</button>
+        </div>
+        <div style="display:grid; grid-template-columns:repeat(2,1fr); gap:10px;">
+            <button class="btn btn-anim" onclick="startMatrix()">💚 THE MATRIX</button>
         </div>
     </div>
 </div>

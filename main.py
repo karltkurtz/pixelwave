@@ -591,6 +591,21 @@ async def set_led(index: int, color: dict):
     })
     return {"status": "ok"}
 
+@app.post("/leds/batch")
+async def set_leds_batch(payload: dict):
+    if not session["active"]:
+        return {"error": "no active session"}
+    leds = payload.get("leds", [])
+    for led in leds:
+        idx = led.get("index")
+        if idx is not None and 0 <= idx < NUM_LEDS:
+            board_state[idx] = {"r": led["r"], "g": led["g"], "b": led["b"]}
+            if HAS_LEDS:
+                strip.setPixelColor(snake_index(idx), ws281x.Color(led["r"], led["g"], led["b"]))
+    if HAS_LEDS and leds:
+        strip.show()
+    return {"status": "ok"}
+
 @app.post("/clear")
 async def clear_board():
     global board_state
