@@ -4,10 +4,12 @@
 PixelWave is an interactive LED art board hosted at **pigarage.com**. Visitors can draw pixel art on a 16x16 WS2812B LED matrix via a web interface. A Raspberry Pi HQ Camera streams a live view of the physical board. The project combines hardware control, real-time WebSocket communication, and a polished retro-themed web interface.
 
 ## Hardware
-- **Pi:** Raspberry Pi 4 at `10.0.0.81` (hostname: `litebrite`)
-- **SSH:** `ssh karltkurtz@10.0.0.81`
-- **LED Matrix:** 16x16 WS2812B (256 LEDs), snake indexed, GPIO 18
-- **Camera:** Raspberry Pi HQ Camera (IMX477, 12.3MP) + 16mm telephoto lens
+- **Main Pi:** Raspberry Pi 4 at `10.0.0.81` (hostname: `litebrite`) — runs FastAPI server, controls LEDs
+- **Camera Pi:** Raspberry Pi at `10.0.0.8` (hostname: `camera`) — dedicated camera server on port 8080
+- **SSH (main):** `ssh -i ~/.ssh/pixelwave_key karltkurtz@10.0.0.81`
+- **SSH (camera):** `ssh -i ~/.ssh/pixelwave_key karltkurtz@10.0.0.8`
+- **LED Matrix:** 16x16 WS2812B (256 LEDs), snake indexed, GPIO 18, **physically mounted 90° CCW**
+- **Camera:** Raspberry Pi HQ Camera (IMX477, 12.3MP) + 16mm telephoto lens (on camera Pi)
 - **PSU:** ALITOVE 5V 10A
 - **LED Brightness:** Capped at 102/255 (~40%) for PSU safety
 
@@ -22,14 +24,14 @@ PixelWave is an interactive LED art board hosted at **pigarage.com**. Visitors c
 - **Frontend:** Vanilla HTML/CSS/JS
 - **WebSockets:** Real-time LED state sync between all clients
 - **LED Control:** `rpi_ws281x` library
-- **Camera:** `picamera2` with background capture thread
+- **Camera:** Dedicated camera Pi (`10.0.0.8:8080`) serves JPEG snapshots via Python BaseHTTP. Main Pi polls it in a background thread using `urllib.request` every 100ms and caches the latest frame. `/snapshot` serves from cache.
 - **Serving:** uvicorn via systemd service (`litebrite.service`)
 
 ## File Structure
 ```
 pixelwave/
-├── main.py                  # FastAPI server, WebSocket, LED control, camera
-├── stream.py                # Standalone camera stream server (deprecated, camera now in main.py)
+├── main.py                  # FastAPI server, WebSocket, LED control, camera proxy
+├── stream.py                # Camera Pi server — snapshot serving + camera controls (runs on 10.0.0.8)
 ├── static/
 │   ├── index.html           # Main page — live stream, draw overlay, board status
 │   ├── style.css            # All CSS (extracted from index.html)
@@ -70,28 +72,34 @@ After every code change:
    ```
 
 ## Systemd Services
-- **Main app:** `sudo systemctl restart litebrite`
-- **Cloudflare tunnel:** `sudo systemctl restart cloudflared`
-- **Stream service:** `pixelwave-stream.service` (disabled — camera integrated into main.py)
+- **Main app (main Pi):** `sudo systemctl restart litebrite`
+- **Cloudflare tunnel (main Pi):** `sudo systemctl restart cloudflared`
+- **Camera server (camera Pi):** `nohup python3 ~/stream.py > ~/stream.log 2>&1 &` — restart with: `ssh -i ~/.ssh/pixelwave_key karltkurtz@10.0.0.8 "sudo kill \$(sudo ss -tlnp | grep 8080 | grep -oP 'pid=\K[0-9]+') 2>/dev/null; sleep 1; nohup python3 ~/stream.py > ~/stream.log 2>&1 &"`
 
 ## Key Technical Details
 
 ### Snake Index Remapping
-The 16x16 matrix uses snake wiring. Every even row is reversed:
+The 16x16 matrix uses snake wiring AND is physically mounted 90° CCW. Coordinates are pre-rotated 90° CW before applying even-row reversal:
 ```python
 def snake_index(index: int) -> int:
     row = index // 16
     col = index % 16
-    if row % 2 == 0:
-        col = 15 - col
-    return row * 16 + col
+    # Pre-rotate 90° CW to compensate for physical 90° CCW mounting
+    new_row = col
+    new_col = 15 - row
+    if new_row % 2 == 0:
+        new_col = 15 - new_col
+    return new_row * 16 + new_col
 ```
 
 ### Camera
-- Integrated into `main.py` as a background thread
-- Captures JPEG every 0.02s (~50fps), serves latest frame at `/snapshot`
+- Runs on dedicated camera Pi at `10.0.0.8:8080` (Python BaseHTTP server, single-threaded)
+- Main Pi `camera_fetch_loop()` polls camera Pi every 100ms via `urllib.request`, stores frame in `latest_frame`
+- `/snapshot` endpoint serves from `latest_frame` (no per-request fan-out to camera Pi)
 - Snapshot polling in JS every 150ms (~6-7fps delivery)
-- Camera controls available at `/admin/camera` (exposure, gain, brightness, contrast, saturation)
+- **Watch out:** camera Pi's BaseHTTP server is single-threaded — never make concurrent requests to it directly. Always go through the main Pi's cached `/snapshot`.
+- Camera controls in `/admin/camera` are forwarded to `POST http://10.0.0.8:8080/controls` which calls `picam2.set_controls()`
+- Deploy to camera Pi: `scp -i ~/.ssh/pixelwave_key stream.py karltkurtz@10.0.0.8:~/stream.py` then restart (see Systemd Services)
 
 ### WebSocket Flow
 - All clients connect to `/ws`
@@ -133,6 +141,8 @@ Located in `static/templates.js`. Categories:
 - Cloudflare Tunnel drops persistent MJPEG streams after ~30s — using snapshot polling instead
 
 ## Recently Completed
+- **Camera Pi migration:** Moved camera from main Pi to dedicated Pi at `10.0.0.8:8080`. Fixed livestream by replacing per-request httpx proxy (overwhelmed single-threaded camera server) with background cache thread using `urllib.request`.
+- **LED orientation fix:** Physical matrix is mounted 90° CCW — fixed `snake_index()` to pre-rotate coordinates 90° CW before applying snake wiring. Affects all LED operations.
 - Admin page: added ← BACK TO LIVE STREAM nav link
 - Admin page: added password-protected CLEAR ARTWORK and CLEAR GUESTBOOK buttons
 - `POST /leds/batch` endpoint: sets multiple LEDs in one `strip.show()` call (used by animations)

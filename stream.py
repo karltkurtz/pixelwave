@@ -5,22 +5,40 @@ import time
 from http.server import BaseHTTPRequestHandler, HTTPServer
 from picamera2 import Picamera2
 
-# Latest frame cache
-latest_frame = None
+# Shared state
 frame_lock = threading.Lock()
+cam_lock = threading.Lock()
+latest_frame = None
+auto_reset_event = threading.Event()
 
-# Camera setup
-picam2 = Picamera2()
-config = picam2.create_video_configuration(main={"size": (640, 480)})
-picam2.configure(config)
-picam2.start()
+def make_camera():
+    cam = Picamera2()
+    cfg = cam.create_video_configuration(main={"size": (640, 480)})
+    cam.configure(cfg)
+    cam.start()
+    return cam
+
+picam2 = make_camera()
 
 def capture_loop():
-    global latest_frame
+    global latest_frame, picam2
     while True:
+        if auto_reset_event.is_set():
+            with cam_lock:
+                try:
+                    picam2.stop()
+                    picam2.close()
+                    picam2 = make_camera()
+                    time.sleep(1.5)  # let AE converge before serving frames
+                except Exception:
+                    pass
+                auto_reset_event.clear()
+            continue
+
         try:
-            buf = io.BytesIO()
-            picam2.capture_file(buf, format='jpeg')
+            with cam_lock:
+                buf = io.BytesIO()
+                picam2.capture_file(buf, format='jpeg')
             with frame_lock:
                 latest_frame = buf.getvalue()
         except Exception:
@@ -57,23 +75,25 @@ class StreamingHandler(BaseHTTPRequestHandler):
             body = self.rfile.read(length)
             try:
                 data = json.loads(body)
-                controls = {}
-                if 'exposure' in data:
-                    controls['AeEnable'] = False
-                    controls['ExposureTime'] = int(data['exposure'])
-                if 'gain' in data:
-                    controls['AnalogueGain'] = float(data['gain'])
-                if 'brightness' in data:
-                    controls['Brightness'] = float(data['brightness'])
-                if 'contrast' in data:
-                    controls['Contrast'] = float(data['contrast'])
-                if 'saturation' in data:
-                    controls['Saturation'] = float(data['saturation'])
                 if data.get('auto'):
-                    controls['AeEnable'] = True
-                    controls['AwbEnable'] = True
-                if controls:
-                    picam2.set_controls(controls)
+                    # Signal capture loop to fully recreate the camera (thread-safe reset)
+                    auto_reset_event.set()
+                else:
+                    controls = {}
+                    if 'exposure' in data:
+                        controls['AeEnable'] = False
+                        controls['ExposureTime'] = int(data['exposure'])
+                    if 'gain' in data:
+                        controls['AnalogueGain'] = float(data['gain'])
+                    if 'brightness' in data:
+                        controls['Brightness'] = float(data['brightness'])
+                    if 'contrast' in data:
+                        controls['Contrast'] = float(data['contrast'])
+                    if 'saturation' in data:
+                        controls['Saturation'] = float(data['saturation'])
+                    if controls:
+                        with cam_lock:
+                            picam2.set_controls(controls)
                 self.send_response(200)
                 self.send_header('Content-Type', 'application/json')
                 self.end_headers()

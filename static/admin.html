@@ -72,6 +72,10 @@
         .btn-apply { background: rgba(79,209,197,0.2); color: var(--teal); border: 1px solid rgba(79,209,197,0.4); }
         .btn-auto { background: rgba(246,173,85,0.2); color: var(--amber); border: 1px solid rgba(246,173,85,0.4); }
         .btn-danger { background: rgba(255,100,100,0.2); color: #ff6464; border: 1px solid rgba(255,100,100,0.4); }
+        .btn-inactive { opacity: 0.3; }
+        #camera-sliders.sliders-disabled input[type=range] { opacity: 0.3; pointer-events: none; }
+        #camera-sliders.sliders-disabled .slider-label,
+        #camera-sliders.sliders-disabled .slider-value { opacity: 0.3; }
         .status-msg { font-family: 'Press Start 2P', monospace; font-size: 6px; color: var(--teal); margin-top: 12px; min-height: 16px; }
         .password-wrap { margin-bottom: 24px; }
         .password-wrap input {
@@ -99,35 +103,36 @@
 
     <div class="admin-card">
         <div class="admin-title">📷 CAMERA CONTROLS</div>
-        <div class="slider-row">
-            <span class="slider-label">EXPOSURE</span>
-            <input type="range" id="exposure" min="100" max="100000" value="20000" oninput="document.getElementById('exposure-val').textContent=this.value+'μs'">
-            <span class="slider-value" id="exposure-val">20000μs</span>
+        <div id="camera-sliders">
+            <div class="slider-row">
+                <span class="slider-label">EXPOSURE</span>
+                <input type="range" id="exposure" min="100" max="100000" value="20000" oninput="document.getElementById('exposure-val').textContent=this.value+'μs'">
+                <span class="slider-value" id="exposure-val">20000μs</span>
+            </div>
+            <div class="slider-row">
+                <span class="slider-label">GAIN</span>
+                <input type="range" id="gain" min="1" max="16" step="0.1" value="2" oninput="document.getElementById('gain-val').textContent=parseFloat(this.value).toFixed(1)">
+                <span class="slider-value" id="gain-val">2.0</span>
+            </div>
+            <div class="slider-row">
+                <span class="slider-label">BRIGHTNESS</span>
+                <input type="range" id="brightness" min="-1" max="1" step="0.05" value="0" oninput="document.getElementById('brightness-val').textContent=parseFloat(this.value).toFixed(2)">
+                <span class="slider-value" id="brightness-val">0.00</span>
+            </div>
+            <div class="slider-row">
+                <span class="slider-label">CONTRAST</span>
+                <input type="range" id="contrast" min="0" max="4" step="0.1" value="1" oninput="document.getElementById('contrast-val').textContent=parseFloat(this.value).toFixed(1)">
+                <span class="slider-value" id="contrast-val">1.0</span>
+            </div>
+            <div class="slider-row">
+                <span class="slider-label">SATURATION</span>
+                <input type="range" id="saturation" min="0" max="4" step="0.1" value="1" oninput="document.getElementById('saturation-val').textContent=parseFloat(this.value).toFixed(1)">
+                <span class="slider-value" id="saturation-val">1.0</span>
+            </div>
         </div>
-        <div class="slider-row">
-            <span class="slider-label">GAIN</span>
-            <input type="range" id="gain" min="1" max="16" step="0.1" value="2" oninput="document.getElementById('gain-val').textContent=parseFloat(this.value).toFixed(1)">
-            <span class="slider-value" id="gain-val">2.0</span>
-        </div>
-        <div class="slider-row">
-            <span class="slider-label">BRIGHTNESS</span>
-            <input type="range" id="brightness" min="-1" max="1" step="0.05" value="0" oninput="document.getElementById('brightness-val').textContent=parseFloat(this.value).toFixed(2)">
-            <span class="slider-value" id="brightness-val">0.00</span>
-        </div>
-        <div class="slider-row">
-            <span class="slider-label">CONTRAST</span>
-            <input type="range" id="contrast" min="0" max="4" step="0.1" value="1" oninput="document.getElementById('contrast-val').textContent=parseFloat(this.value).toFixed(1)">
-            <span class="slider-value" id="contrast-val">1.0</span>
-        </div>
-        <div class="slider-row">
-            <span class="slider-label">SATURATION</span>
-            <input type="range" id="saturation" min="0" max="4" step="0.1" value="1" oninput="document.getElementById('saturation-val').textContent=parseFloat(this.value).toFixed(1)">
-            <span class="slider-value" id="saturation-val">1.0</span>
-        </div>
-        <button class="admin-btn btn-apply" onclick="applyCamera()">APPLY</button>
-        <button class="admin-btn btn-auto" onclick="setAutoCamera()">AUTO</button>
+        <button id="btn-manual" class="admin-btn btn-apply" onclick="applyCamera()">MANUAL</button>
+        <button id="btn-auto-cam" class="admin-btn btn-auto" onclick="setAutoCamera()">AUTO</button>
         <div class="status-msg" id="camera-status"></div>
-        <div id="camera-mode" style="font-family:'Press Start 2P',monospace; font-size:6px; margin-top:8px; color:var(--muted);">MODE: UNKNOWN</div>
     </div>
 
     <div class="admin-card">
@@ -159,13 +164,17 @@
     }
 
     function setCameraMode(auto) {
-        const el = document.getElementById('camera-mode');
+        const btnManual = document.getElementById('btn-manual');
+        const btnAuto = document.getElementById('btn-auto-cam');
+        const sliders = document.getElementById('camera-sliders');
         if (auto) {
-            el.textContent = '● AUTO MODE IS RUNNING';
-            el.style.color = 'var(--teal)';
+            btnManual.classList.add('btn-inactive');
+            btnAuto.classList.remove('btn-inactive');
+            sliders.classList.add('sliders-disabled');
         } else {
-            el.textContent = '● MANUAL MODE IS RUNNING';
-            el.style.color = '#9f7aea';
+            btnAuto.classList.add('btn-inactive');
+            btnManual.classList.remove('btn-inactive');
+            sliders.classList.remove('sliders-disabled');
         }
     }
 
