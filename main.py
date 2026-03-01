@@ -53,16 +53,19 @@ async def set_brightness(request: Request):
         strip.show()
     return {"brightness": level}
 
+CAMERA_PI_URL = "http://10.0.0.8:8080/?action=snapshot"
+
 @app.get("/snapshot")
 async def snapshot():
-    if not camera_available or latest_frame is None:
+    try:
+        with urllib.request.urlopen(CAMERA_PI_URL, timeout=2) as res:
+            frame = res.read()
+        return Response(content=frame, media_type="image/jpeg", headers={
+            "Cache-Control": "no-cache, no-store",
+            "Access-Control-Allow-Origin": "*"
+        })
+    except Exception:
         return Response(status_code=503)
-    with frame_lock:
-        frame = latest_frame
-    return Response(content=frame, media_type="image/jpeg", headers={
-        "Cache-Control": "no-cache, no-store",
-        "Access-Control-Allow-Origin": "*"
-    })
 app.mount("/static", StaticFiles(directory="static"), name="static")
 
 NUM_LEDS = 256
