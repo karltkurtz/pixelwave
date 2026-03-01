@@ -484,7 +484,19 @@ async def set_camera(payload: dict):
     if "auto" in payload and payload["auto"]:
         controls["AeEnable"] = True
         controls["AwbEnable"] = True
-    # Camera controls not available (camera runs on separate Pi)
+    # Forward controls to camera Pi
+    forward = {k: v for k, v in payload.items() if k != "password"}
+    try:
+        data = json.dumps(forward).encode()
+        req = urllib.request.Request(
+            "http://10.0.0.8:8080/controls",
+            data=data,
+            headers={"Content-Type": "application/json"},
+            method="POST"
+        )
+        urllib.request.urlopen(req, timeout=3)
+    except Exception as e:
+        return {"status": "error", "detail": str(e)}
     return {"status": "ok"}
 
 @app.get("/admin")

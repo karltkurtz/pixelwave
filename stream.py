@@ -1,4 +1,5 @@
 import io
+import json
 import threading
 import time
 from http.server import BaseHTTPRequestHandler, HTTPServer
@@ -47,6 +48,41 @@ class StreamingHandler(BaseHTTPRequestHandler):
             self.send_header('Access-Control-Allow-Origin', '*')
             self.end_headers()
             self.wfile.write(frame)
+        else:
+            self.send_error(404)
+
+    def do_POST(self):
+        if self.path == '/controls':
+            length = int(self.headers.get('Content-Length', 0))
+            body = self.rfile.read(length)
+            try:
+                data = json.loads(body)
+                controls = {}
+                if 'exposure' in data:
+                    controls['AeEnable'] = False
+                    controls['ExposureTime'] = int(data['exposure'])
+                if 'gain' in data:
+                    controls['AnalogueGain'] = float(data['gain'])
+                if 'brightness' in data:
+                    controls['Brightness'] = float(data['brightness'])
+                if 'contrast' in data:
+                    controls['Contrast'] = float(data['contrast'])
+                if 'saturation' in data:
+                    controls['Saturation'] = float(data['saturation'])
+                if data.get('auto'):
+                    controls['AeEnable'] = True
+                    controls['AwbEnable'] = True
+                if controls:
+                    picam2.set_controls(controls)
+                self.send_response(200)
+                self.send_header('Content-Type', 'application/json')
+                self.end_headers()
+                self.wfile.write(b'{"status":"ok"}')
+            except Exception as e:
+                self.send_response(500)
+                self.send_header('Content-Type', 'application/json')
+                self.end_headers()
+                self.wfile.write(json.dumps({"status": "error", "detail": str(e)}).encode())
         else:
             self.send_error(404)
 
