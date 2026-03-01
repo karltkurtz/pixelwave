@@ -10,38 +10,28 @@ import urllib.request
 import urllib.parse
 
 app = FastAPI()
-# Camera stream
-try:
-    from picamera2 import Picamera2
-    import io
-    import threading
-    import time
 
-    latest_frame = None
-    frame_lock = threading.Lock()
+# Camera stream — fetched from camera Pi at 10.0.0.8
+import threading
 
-    picam2 = Picamera2()
-    cam_config = picam2.create_video_configuration(main={"size": (640, 480)})
-    picam2.configure(cam_config)
-    picam2.start()
+CAMERA_PI_URL = "http://10.0.0.8:8080/?action=snapshot"
+latest_frame = None
+frame_lock = threading.Lock()
 
-    def capture_loop():
-        global latest_frame
-        while True:
-            try:
-                buf = io.BytesIO()
-                picam2.capture_file(buf, format='jpeg')
-                with frame_lock:
-                    latest_frame = buf.getvalue()
-            except Exception:
-                pass
-            time.sleep(0.02)
+def camera_fetch_loop():
+    global latest_frame
+    while True:
+        try:
+            with urllib.request.urlopen(CAMERA_PI_URL, timeout=3) as resp:
+                data = resp.read()
+            with frame_lock:
+                latest_frame = data
+        except Exception:
+            pass
+        time.sleep(0.1)
 
-    cam_thread = threading.Thread(target=capture_loop, daemon=True)
-    cam_thread.start()
-    camera_available = True
-except Exception:
-    camera_available = False
+cam_thread = threading.Thread(target=camera_fetch_loop, daemon=True)
+cam_thread.start()
 
 @app.post("/brightness")
 async def set_brightness(request: Request):
@@ -53,20 +43,16 @@ async def set_brightness(request: Request):
         strip.show()
     return {"brightness": level}
 
-CAMERA_PI_URL = "http://10.0.0.8:8080/?action=snapshot"
-
 @app.get("/snapshot")
 async def snapshot():
-    try:
-        import httpx
-        async with httpx.AsyncClient(timeout=2) as client:
-            res = await client.get(CAMERA_PI_URL)
-            return Response(content=res.content, media_type="image/jpeg", headers={
-                "Cache-Control": "no-cache, no-store",
-                "Access-Control-Allow-Origin": "*"
-            })
-    except Exception:
+    with frame_lock:
+        frame = latest_frame
+    if frame is None:
         return Response(status_code=503)
+    return Response(content=frame, media_type="image/jpeg", headers={
+        "Cache-Control": "no-cache, no-store",
+        "Access-Control-Allow-Origin": "*"
+    })
 app.mount("/static", StaticFiles(directory="static"), name="static")
 
 NUM_LEDS = 256
@@ -495,8 +481,7 @@ async def set_camera(payload: dict):
     if "auto" in payload and payload["auto"]:
         controls["AeEnable"] = True
         controls["AwbEnable"] = True
-    if controls and camera_available:
-        picam2.set_controls(controls)
+    # Camera controls not available (camera runs on separate Pi)
     return {"status": "ok"}
 
 @app.get("/admin")
