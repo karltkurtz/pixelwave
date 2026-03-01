@@ -1259,11 +1259,11 @@ function startPolice() {
         }
 
         function updateVisitorCounter(total, unique, locations) {
-            let text = `👁 ${total} VISITS`;
+            let html = `👁 ${total} VISITS`;
             if (locations && locations.length > 0) {
-                text += ` — ${locations.join(' · ')}`;
+                html += `<br>Most recent visit from ${locations[0]}`;
             }
-            document.getElementById('visitor-counter').textContent = text;
+            document.getElementById('visitor-counter').innerHTML = html;
         }
 
         function loadVisitorCount() {
