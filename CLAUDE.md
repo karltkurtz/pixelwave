@@ -5,7 +5,7 @@ PixelWave is an interactive LED art board hosted at **pigarage.com**. Visitors c
 
 ## Hardware
 - **Main Pi:** Raspberry Pi 4 at `10.0.0.81` (hostname: `litebrite`) — runs FastAPI server, controls LEDs
-- **Camera Pi:** Raspberry Pi at `10.0.0.8` (hostname: `camera`) — dedicated camera server on port 8080
+- **Camera Pi:** Raspberry Pi 4 at `10.0.0.8` (hostname: `camera`) — dedicated camera server on port 8080
 - **SSH (main):** `ssh -i ~/.ssh/pixelwave_key karltkurtz@10.0.0.81`
 - **SSH (camera):** `ssh -i ~/.ssh/pixelwave_key karltkurtz@10.0.0.8`
 - **LED Matrix:** 16x16 WS2812B (256 LEDs), snake indexed, GPIO 18, **physically mounted 90° CCW**
@@ -109,50 +109,52 @@ def snake_index(index: int) -> int:
 - Messages: `init`, `led_update`, `session_start`, `session_end`, `claim_window`, `finish`, `visitor_count`
 
 ### LED Brightness
-- Current default: 15/255
+- Current default: slider `value=3` → sends level 3 to server → ~1.2% of hardware max (3/255)
+- Displayed as 3% in the UI (formula: `value / 102 * 100`, hardcoded label on load)
 - Max allowed via slider: 102/255 (~40%) — PSU safety limit
-- User-facing slider shows 0-100% but maps to 0-102 internally
+- User-facing slider shows 1–100% but maps to 1–102 internally
 
 ### CSS Cache Busting
 CSS and JS files use version query params:
-- `style.css?v=6`
-- `templates.js?v=4`
+- `style.css?v=9`
+- `templates.js?v=7`
 Bump these when making CSS/JS changes to force browser refresh.
 
 ## Pixel Art Templates
 Located in `static/templates.js`. Categories:
 - **Gaming:** Mario, Batman, Pac-Man, Invader, Among Us, Pokéball, Creeper, Tetris, Kirby, Pikachu, Ghost
 - **Pop Culture:** Vader, Stormtrooper, Skull, Yoda, R2-D2, Iron Man, Cap Shield, Thanos
-- **Expressions:** Heart, Smiley
-- **Animals:** (coming soon)
+- **Expressions:** Heart, Smiley, Cool, Wow, Angry
+- **Animals:** Cat, Frog, Dog
 - **Holiday:** 12 date-gated templates (Pumpkin, Turkey, Snowflake, Christmas Tree, Santa, Fireworks, Easter Bunny, Valentine Heart, Shamrock, Harvest Moon, Menorah, New Year's Ball)
 
 ## Current Todo List
 - YouTube Live streaming
-- Tweak 3D viewport orbiting and panning (disabled, revisit after matrix upgrade)
 - Fill tool
 - A "how to use" tooltip or mini guide for first-time visitors
 - Allow visitors to vote/react to current drawing with emojis (👍❤️🔥)
-- Add Animals pixel art templates
+- Add more pixel art templates (more Animals, more Expressions)
 - Add sound effects — soft click when painting, chime when finishing
 - Show live count of how many people are currently watching
-- ANIMATE button (animations: Matrix, Rainbow Wave, Twinkle, Fire, Police Lights) — built but disabled (under construction) pending polish
-- Site polish
+- ANIMATE button (animations: Matrix, Rainbow Wave, Twinkle, Fire, Police Lights) — built but disabled pending polish
 
 ## Known Issues
 - Cloudflare Tunnel drops persistent MJPEG streams after ~30s — using snapshot polling instead
 
 ## Recently Completed
+- **Site polish pass:** CLICK TO DRAW and DONE buttons animate with cycling color + glow (`claimColor` 10s keyframe: amber→teal→coral→green→purple). ANIMATE button recolored amber to match SURPRISE. 3D VIEW button removed from draw overlay (feature dropped). Under construction banner removed.
+- **Draw overlay UX:** "Artboard is free — Use it!" status text hidden (unnecessary). BOARD IN USE button hidden (`display:none`) instead of disabled/greyed — restores on `setSessionIdle`.
+- **Button layout:** Donate and Past Artwork button positions swapped on main page.
+- **Open Graph / Twitter Card meta tags** added to index.html — image at `https://pigarage.com/static/og-image.png`.
+- **Pixel art templates added:** Animals tab: Cat, Frog, Dog. Expressions tab: Cool (sunglasses), Wow (O-mouth), Angry (V-brows + frown).
+- **Default brightness set to 3%** (slider `value=3`, label hardcoded `3%` on load).
+- **About page updated:** Added Raspberry Pi 4 (camera) as a separate hardware entry; corrected matrix specs from 16x32/512 to 16x16/256.
 - **Camera admin controls:** MANUAL/AUTO mode switching with greyed-out inactive button (still clickable to switch back), sliders disabled in AUTO mode. AUTO does a full Picamera2 recreate (thread-safe via cam_lock + auto_reset_event) to guarantee clean AE reset.
 - **Camera Pi migration:** Moved camera from main Pi to dedicated Pi at `10.0.0.8:8080`. Fixed livestream by replacing per-request httpx proxy (overwhelmed single-threaded camera server) with background cache thread using `urllib.request`.
 - **LED orientation fix:** Physical matrix is mounted 90° CCW — fixed `snake_index()` to pre-rotate coordinates 90° CW before applying snake wiring. Affects all LED operations.
-- Admin page: added ← BACK TO LIVE STREAM nav link
-- Admin page: added password-protected CLEAR ARTWORK and CLEAR GUESTBOOK buttons
+- Admin page: added ← BACK TO LIVE STREAM nav link, password-protected CLEAR ARTWORK and CLEAR GUESTBOOK buttons
 - `POST /leds/batch` endpoint: sets multiple LEDs in one `strip.show()` call (used by animations)
 - Visitor footer redesigned: two lines — total visits + "Most recent visit from [location]"
-- Main page layout reordered: nav buttons and past artwork link moved below live stream and artboard section
-- Added spacing between USE THE ARTBOARD button and nav buttons
-- DONE button on draw overlay hidden until user claims the artboard
 - DONE popup: replaced CANCEL with NOT DONE button
 - Mobile fix: set finish name input font-size to 16px to prevent iOS Safari auto-zoom
 
