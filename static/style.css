@@ -380,7 +380,7 @@
             50% { transform: translateY(-4px); }
         }
 
-        .btn-finish { background: var(--green); color: #1a1a2e; }
+        .btn-finish { color: #1a1a2e; animation: claimColor 10s ease-in-out infinite, claimFloat 3s ease-in-out infinite; }
         .btn-anim { background: rgba(246,173,85,0.1); color: var(--amber); border: 1px solid rgba(246,173,85,0.3); }
         .btn-anim.active { background: rgba(246,173,85,0.3); box-shadow: 0 0 12px rgba(246,173,85,0.5); }
         .btn-surprise { background: rgba(246,173,85,0.1); color: var(--amber); border: 1px solid rgba(246,173,85,0.3); }
