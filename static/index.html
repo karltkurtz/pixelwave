@@ -45,9 +45,9 @@
             </div>
         </div>
 
-        <div class="status-bar">
+        <div class="status-bar" id="main-status-bar" style="display:none;">
             <div>
-                <div id="status">Connecting...</div>
+                <div id="status"></div>
                 <div id="message"></div>
                 <div id="claim-window"></div>
             </div>
@@ -127,6 +127,7 @@
         const ROWS = 16;
         const grid = document.getElementById('led-grid');
         const statusEl = document.getElementById('status');
+        const mainStatusBar = document.getElementById('main-status-bar');
         const claimBtn = document.getElementById('overlay-claim-btn');
         const userControls = document.getElementById('user-controls');
         const homeBadge = document.getElementById('home-badge');
@@ -557,6 +558,7 @@ function getSeasonalTheme() {
                         currentSessionLocation = data.location && data.location !== 'Unknown' ? ` in ${data.location}` : '';
                         statusEl.textContent = `Board in use by someone${currentSessionLocation}...`;
                         statusEl.style.color = 'var(--coral)';
+                        mainStatusBar.style.display = 'flex';
                         document.getElementById('claim-btn').disabled = true;
                         document.getElementById('claim-btn').style.opacity = '0.3';
                     }
@@ -573,17 +575,21 @@ function getSeasonalTheme() {
                     claimBtn.style.opacity = '0.3';
                     claimBtn.textContent = 'BOARD IN USE';
                     statusEl.textContent = 'Board opens soon...';
+                    statusEl.style.color = 'var(--amber)';
+                    mainStatusBar.style.display = 'flex';
                     launchConfetti();
                 }
                 else if (data.type === 'claim_window') {
                     statusEl.textContent = `Board opens in ${data.seconds}s...`;
                     statusEl.style.color = 'var(--amber)';
+                    mainStatusBar.style.display = 'flex';
                     document.getElementById('claim-btn').disabled = true;
                     document.getElementById('claim-btn').style.opacity = '0.3';
                 }
                 else if (data.type === 'claim_window_tick') {
                     statusEl.textContent = `Board opens in ${data.seconds}s...`;
                     statusEl.style.color = 'var(--amber)';
+                    mainStatusBar.style.display = 'flex';
                     document.getElementById('claim-btn').disabled = true;
                     document.getElementById('claim-btn').style.opacity = '0.3';
                 }
@@ -606,6 +612,7 @@ function getSeasonalTheme() {
                     if (!iAmActive) {
                         statusEl.textContent = `Board in use by someone${currentSessionLocation} — ${mins}:${secs.toString().padStart(2, '0')} remaining`;
                         statusEl.style.color = 'var(--coral)';
+                        mainStatusBar.style.display = 'flex';
                     }
                 }
                 else if (data.type === 'led_update') {
@@ -619,9 +626,11 @@ function getSeasonalTheme() {
                 }
             };
 
-            ws.onopen = () => { statusEl.textContent = 'Artboard is free — Use it!'; statusEl.style.color = 'var(--green)'; };
+            ws.onopen = () => {};
             ws.onclose = () => {
                 statusEl.textContent = 'Reconnecting...';
+                statusEl.style.color = 'var(--muted)';
+                mainStatusBar.style.display = 'flex';
                 setTimeout(connectWS, 2000);
             };
         }
@@ -654,8 +663,8 @@ function getSeasonalTheme() {
             claimBtn.style.opacity = '1';
             claimBtn.textContent = 'USE THE ARTBOARD';
             
-            statusEl.textContent = 'Artboard is free — Use it!';
-            statusEl.style.color = 'var(--green)';
+            statusEl.textContent = '';
+            mainStatusBar.style.display = 'none';
             statusEl2.textContent = 'Artboard is free — Use it!';
             statusEl2.style.color = 'var(--green)';
             document.getElementById('back-btn').style.display = 'inline-block';
