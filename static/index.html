@@ -53,7 +53,7 @@
             </div>
             <div id="timer"></div>
         </div>
-        <button class="btn btn-claim" id="claim-btn" onclick="openOverlay()" style="width:100%;">USE THE ARTBOARD</button>
+        <button class="btn btn-claim" id="claim-btn" onclick="openOverlay()" style="width:100%;">CLICK TO DRAW!</button>
 
         <div class="last-session-bar" id="last-session-bar" style="display:none;">
             ✏️ Last drawing: <span id="last-session-time"></span>
@@ -93,7 +93,7 @@
             </div>
 
             <div class="controls-bar">
-                <button class="btn btn-claim" id="overlay-claim-btn" onclick="claim()">USE THE ARTBOARD</button>
+                <button class="btn btn-claim" id="overlay-claim-btn" onclick="claim()">CLICK TO DRAW!</button>
                 <button class="btn btn-view" id="view-toggle" onclick="showUnderConstruction()" style="opacity:0.3;">⬡ 3D VIEW</button>
                 <div id="user-controls" style="display:none; align-items:center; gap:12px; flex-wrap:wrap;">
                     <div class="color-wrap">
@@ -661,7 +661,7 @@ function getSeasonalTheme() {
             timerEl.textContent = '';
             claimBtn.disabled = false;
             claimBtn.style.opacity = '1';
-            claimBtn.textContent = 'USE THE ARTBOARD';
+            claimBtn.textContent = 'CLICK TO DRAW!';
             
             statusEl.textContent = '';
             mainStatusBar.style.display = 'none';
@@ -1273,7 +1273,7 @@ function startPolice() {
         function updateVisitorCounter(total, unique, locations) {
             let html = `👁 ${total} VISITS`;
             if (locations && locations.length > 0) {
-                html += `<br>Most recent visit from ${locations[0]}`;
+                html += `<br>Most recent visit: ${locations[0]}`;
             }
             document.getElementById('visitor-counter').innerHTML = html;
         }
