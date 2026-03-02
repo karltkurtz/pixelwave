@@ -381,8 +381,8 @@
         }
 
         .btn-finish { background: var(--green); color: #1a1a2e; }
-        .btn-anim { background: rgba(104,211,145,0.1); color: var(--green); border: 1px solid rgba(104,211,145,0.3); }
-        .btn-anim.active { background: rgba(104,211,145,0.3); box-shadow: 0 0 12px rgba(104,211,145,0.5); }
+        .btn-anim { background: rgba(246,173,85,0.1); color: var(--amber); border: 1px solid rgba(246,173,85,0.3); }
+        .btn-anim.active { background: rgba(246,173,85,0.3); box-shadow: 0 0 12px rgba(246,173,85,0.5); }
         .btn-surprise { background: rgba(246,173,85,0.1); color: var(--amber); border: 1px solid rgba(246,173,85,0.3); }
         .btn-surprise:hover { box-shadow: 0 0 12px rgba(246,173,85,0.3); }
         .btn-clear { background: var(--surface); color: var(--text); border: 1px solid var(--border); }

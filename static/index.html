@@ -7,7 +7,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Nunito:wght@400;600;700&display=swap" rel="stylesheet">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/loaders/GLTFLoader.js"></script>
-    <link rel="stylesheet" href="/static/style.css?v=7">
+    <link rel="stylesheet" href="/static/style.css?v=8">
     <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
     <meta http-equiv="Pragma" content="no-cache">
     <meta http-equiv="Expires" content="0">
@@ -62,10 +62,10 @@
         <a class="action-btn guestbook-btn" href="/about">💡 About</a>
         <a class="action-btn email-btn" href="mailto:karltkurtz@gmail.com">✉️ Email Me</a>
         <a class="action-btn guestbook-btn" href="https://instagram.com/Pi_Garage" target="_blank">📸 Instagram</a>
-        <a class="action-btn venmo-btn" href="/donate">💸 Donate to keep this page alive</a>
+        <a class="action-btn guestbook-btn" href="/artwork">🎨 Past Artwork Entries</a>
     </div>
 
-    <a class="action-btn guestbook-btn" href="/artwork" style="margin-bottom: 16px;">🎨 Past Artwork Entries</a>
+    <a class="action-btn venmo-btn" href="/donate" style="margin-bottom: 16px;">💸 Donate to keep this page alive</a>
 
     <footer style="margin-top: 32px; text-align: center; font-size: 12px; color: var(--muted); font-weight: 600; font-family: 'Press Start 2P', monospace; letter-spacing: 1px; line-height: 2;">
         <div id="visitor-counter"></div>
@@ -90,7 +90,6 @@
 
             <div class="controls-bar">
                 <button class="btn btn-claim" id="overlay-claim-btn" onclick="claim()">CLICK TO DRAW!</button>
-                <button class="btn btn-view" id="view-toggle" onclick="showUnderConstruction()" style="opacity:0.3;">⬡ 3D VIEW</button>
                 <div id="user-controls" style="display:none; align-items:center; gap:12px; flex-wrap:wrap;">
                     <div class="color-wrap">
                         <span>COLOR</span>
