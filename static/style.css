@@ -354,11 +354,10 @@
         .btn-claim {
             background: var(--amber);
             color: #1a1a2e;
-            box-shadow: 0 0 16px rgba(246,173,85,0.3);
-            animation: claimPulse 2s ease-in-out infinite, claimFloat 3s ease-in-out infinite;
+            animation: claimColor 10s ease-in-out infinite, claimFloat 3s ease-in-out infinite;
         }
 
-        .btn-claim:hover { box-shadow: 0 0 24px rgba(246,173,85,0.5); }
+        .btn-claim:hover { filter: brightness(1.15); }
 
         .btn-claim:disabled {
             opacity: 0.3;
@@ -367,9 +366,13 @@
             animation: none;
         }
 
-        @keyframes claimPulse {
-            0%, 100% { box-shadow: 0 0 16px rgba(246,173,85,0.3); }
-            50% { box-shadow: 0 0 32px rgba(246,173,85,0.8), 0 0 48px rgba(246,173,85,0.4); }
+        @keyframes claimColor {
+            0%   { background: #f6ad55; box-shadow: 0 0 20px rgba(246,173,85,0.6), 0 0 40px rgba(246,173,85,0.3); }
+            20%  { background: #4fd1c5; box-shadow: 0 0 20px rgba(79,209,197,0.6),  0 0 40px rgba(79,209,197,0.3); }
+            40%  { background: #fc8181; box-shadow: 0 0 20px rgba(252,129,129,0.6), 0 0 40px rgba(252,129,129,0.3); }
+            60%  { background: #68d391; box-shadow: 0 0 20px rgba(104,211,145,0.6), 0 0 40px rgba(104,211,145,0.3); }
+            80%  { background: #9f7aea; box-shadow: 0 0 20px rgba(159,122,234,0.6), 0 0 40px rgba(159,122,234,0.3); }
+            100% { background: #f6ad55; box-shadow: 0 0 20px rgba(246,173,85,0.6),  0 0 40px rgba(246,173,85,0.3); }
         }
 
         @keyframes claimFloat {
