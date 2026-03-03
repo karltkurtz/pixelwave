@@ -413,6 +413,17 @@
         .btn-finish { color: #1a1a2e; animation: claimColor 10s ease-in-out infinite, claimFloat 3s ease-in-out infinite; }
         .btn-anim { background: rgba(246,173,85,0.1); color: var(--amber); border: 1px solid rgba(246,173,85,0.3); }
         .btn-anim.active { background: rgba(246,173,85,0.3); box-shadow: 0 0 12px rgba(246,173,85,0.5); }
+        @keyframes animGlow { 0%,100%{box-shadow:0 0 6px rgba(246,173,85,0.3)} 50%{box-shadow:0 0 18px rgba(246,173,85,0.75),0 0 30px rgba(246,173,85,0.15)} }
+        @keyframes sk1 { 0%,100%{opacity:0;transform:scale(0.2) rotate(0deg)} 40%,60%{opacity:1;transform:scale(1) rotate(180deg)} }
+        @keyframes sk2 { 0%,100%{opacity:0;transform:scale(0.2) rotate(0deg)} 40%,60%{opacity:0.85;transform:scale(0.9) rotate(-180deg)} }
+        @keyframes sk3 { 0%,100%{opacity:0;transform:scale(0.2) rotate(0deg)} 40%,60%{opacity:0.9;transform:scale(1) rotate(90deg)} }
+        @keyframes sk4 { 0%,100%{opacity:0;transform:scale(0.2) rotate(0deg)} 40%,60%{opacity:0.7;transform:scale(0.85) rotate(-90deg)} }
+        .anim-sparkle-wrap { position: relative; display: inline-block; }
+        .anim-sparkle-wrap::before { content:'✦'; position:absolute; top:-12px; left:-10px; font-size:12px; color:var(--amber); animation:sk1 2.3s ease-in-out infinite; pointer-events:none; z-index:1; }
+        .anim-sparkle-wrap::after  { content:'✧'; position:absolute; bottom:-10px; right:-9px; font-size:9px; color:rgba(246,173,85,0.9); animation:sk2 2.8s ease-in-out infinite 0.9s; pointer-events:none; z-index:1; }
+        #anim-btn { position:relative; overflow:visible; animation:animGlow 2.4s ease-in-out infinite; }
+        #anim-btn::before { content:'✦'; position:absolute; top:-11px; right:-9px; font-size:10px; color:rgba(246,173,85,0.85); animation:sk3 2.6s ease-in-out infinite 0.5s; pointer-events:none; }
+        #anim-btn::after  { content:'✧'; position:absolute; bottom:-9px; left:-8px; font-size:11px; color:rgba(246,173,85,0.8); animation:sk4 3.0s ease-in-out infinite 1.4s; pointer-events:none; }
         .btn-surprise { background: rgba(246,173,85,0.1); color: var(--amber); border: 1px solid rgba(246,173,85,0.3); }
         .btn-surprise:hover { box-shadow: 0 0 12px rgba(246,173,85,0.3); }
         .btn-clear { background: var(--surface); color: var(--text); border: 1px solid var(--border); }
