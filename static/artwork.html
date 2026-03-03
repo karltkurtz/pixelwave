@@ -74,8 +74,18 @@
             max-width: 560px;
             display: flex;
             flex-direction: column;
-            gap: 20px;
+            gap: 16px;
         }
+
+        .gallery-header {
+            font-family: 'Press Start 2P', monospace;
+            font-size: 8px;
+            color: var(--muted);
+            letter-spacing: 1px;
+            display: none;
+        }
+
+        .gallery-header span { color: var(--amber); }
 
         .back-btn {
             font-family: 'Press Start 2P', monospace;
@@ -104,41 +114,56 @@
             font-weight: 600;
         }
 
+        #artwork-list {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 14px;
+        }
+
         .artwork-card {
             background: var(--surface);
             border: 1px solid var(--border);
             border-radius: 12px;
-            padding: 16px;
+            padding: 10px;
             animation: fadeUp 0.5s ease both;
+            transition: border-color 0.2s, box-shadow 0.2s;
+            cursor: default;
+        }
+
+        .artwork-card:hover {
+            border-color: rgba(246,173,85,0.45);
+            box-shadow: 0 0 18px rgba(246,173,85,0.12);
         }
 
         .artwork-canvas {
-            width: auto;
-            max-width: 100%;
-            border-radius: 8px;
+            width: 100%;
+            border-radius: 6px;
             image-rendering: pixelated;
             display: block;
-            margin: 0 auto 12px;
+            margin-bottom: 8px;
         }
 
         .artwork-stamp {
             display: flex;
-            flex-wrap: wrap;
-            gap: 8px;
-            align-items: center;
+            flex-direction: column;
+            gap: 3px;
         }
 
         .stamp-name {
             font-family: 'Press Start 2P', monospace;
-            font-size: 7px;
+            font-size: 6px;
             color: var(--amber);
             letter-spacing: 0.5px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
         }
 
         .stamp-detail {
-            font-size: 11px;
+            font-size: 10px;
             color: var(--muted);
             font-weight: 600;
+            line-height: 1.4;
         }
 
         @keyframes fadeUp {
@@ -158,6 +183,7 @@
 
     <div class="content">
         <a class="back-btn" href="/">← BACK TO LIVE STREAM</a>
+        <div class="gallery-header" id="gallery-header">Last <span id="artwork-count"></span> ARTWORKS</div>
         <div id="artwork-list"></div>
     </div>
 
@@ -200,7 +226,7 @@
             stamp.className = 'artwork-stamp';
             stamp.innerHTML = `
                 <span class="stamp-name">✏️ ${entry.name || 'Anonymous'}</span>
-                <span class="stamp-detail">${dateStr} at ${timeStr} — ${durationStr}${locationStr}</span>
+                <span class="stamp-detail">${dateStr}<br>${durationStr}${locationStr}</span>
             `;
 
             card.appendChild(canvas);
@@ -216,7 +242,9 @@
                     list.innerHTML = '<div class="empty-state">No artwork yet — be the first to draw something!</div>';
                     return;
                 }
-                data.slice(0, 5).forEach((entry, i) => list.appendChild(renderArtwork(entry, i)));
+                document.getElementById('artwork-count').textContent = data.length;
+                document.getElementById('gallery-header').style.display = 'block';
+                data.forEach((entry, i) => list.appendChild(renderArtwork(entry, i)));
             });
     </script>
     <script>
