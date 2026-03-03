@@ -1070,6 +1070,120 @@ function startPolice() {
     }, 150);
 }
 
+function startGameOfLife() {
+    document.getElementById('animate-popup').style.display = 'none';
+    let life = new Uint8Array(NUM_LEDS);
+    for (let i = 0; i < NUM_LEDS; i++) life[i] = Math.random() < 0.35 ? 1 : 0;
+    let hue = Math.random() * 360;
+    let staleTicks = 0;
+    let prevAlive = -1;
+    runAnim(() => {
+        const next = new Uint8Array(NUM_LEDS);
+        for (let row = 0; row < 16; row++) {
+            for (let col = 0; col < 16; col++) {
+                const idx = row * 16 + col;
+                let n = 0;
+                for (let dr = -1; dr <= 1; dr++) for (let dc = -1; dc <= 1; dc++) {
+                    if (dr === 0 && dc === 0) continue;
+                    n += life[((row + dr + 16) % 16) * 16 + (col + dc + 16) % 16];
+                }
+                next[idx] = (life[idx] ? (n === 2 || n === 3) : n === 3) ? 1 : 0;
+            }
+        }
+        life = next;
+        const alive = next.reduce((a, b) => a + b, 0);
+        if (alive === prevAlive) staleTicks++; else staleTicks = 0;
+        prevAlive = alive;
+        if (alive === 0 || staleTicks > 4) {
+            for (let i = 0; i < NUM_LEDS; i++) life[i] = Math.random() < 0.35 ? 1 : 0;
+            staleTicks = 0;
+        }
+        hue = (hue + 3) % 360;
+        const {r: hr, g: hg, b: hb} = hslToRgb(hue);
+        const changes = [];
+        for (let i = 0; i < NUM_LEDS; i++) {
+            const nr = life[i] ? hr : 0, ng = life[i] ? hg : 0, nb = life[i] ? hb : 0;
+            const cur = matrixBoard[i];
+            if (cur.r !== nr || cur.g !== ng || cur.b !== nb) {
+                matrixBoard[i] = {r: nr, g: ng, b: nb};
+                changes.push({index: i, r: nr, g: ng, b: nb});
+            }
+        }
+        return changes;
+    }, 180);
+}
+
+function startRipple() {
+    document.getElementById('animate-popup').style.display = 'none';
+    const cx = 7.5, cy = 7.5;
+    const dists = Array.from({length: NUM_LEDS}, (_, i) =>
+        Math.sqrt((Math.floor(i / 16) - cy) ** 2 + ((i % 16) - cx) ** 2));
+    let tick = 0;
+    let hue = Math.random() * 360;
+    runAnim(() => {
+        tick++;
+        hue = (hue + 2) % 360;
+        const {r: hr, g: hg, b: hb} = hslToRgb(hue);
+        const changes = [];
+        for (let i = 0; i < NUM_LEDS; i++) {
+            const wave = Math.max(0, Math.sin((dists[i] - tick * 0.5) * 1.4));
+            const r = Math.round(hr * wave), g = Math.round(hg * wave), b = Math.round(hb * wave);
+            const cur = matrixBoard[i];
+            if (cur.r !== r || cur.g !== g || cur.b !== b) {
+                matrixBoard[i] = {r, g, b};
+                changes.push({index: i, r, g, b});
+            }
+        }
+        return changes;
+    }, 80);
+}
+
+function startFireworks() {
+    document.getElementById('animate-popup').style.display = 'none';
+    let particles = [];
+    let hue = Math.random() * 360;
+    function newBurst() {
+        hue = (hue + 50 + Math.random() * 70) % 360;
+        const {r, g, b} = hslToRgb(hue);
+        const cx = 2 + Math.random() * 12, cy = 2 + Math.random() * 12;
+        const count = 12 + Math.floor(Math.random() * 8);
+        particles = Array.from({length: count}, (_, i) => {
+            const angle = (i / count) * Math.PI * 2;
+            const speed = 0.3 + Math.random() * 0.4;
+            return {x: cx, y: cy, vx: Math.cos(angle) * speed, vy: Math.sin(angle) * speed,
+                r, g, b, life: 1.0, decay: 0.06 + Math.random() * 0.04};
+        });
+    }
+    newBurst();
+    runAnim(() => {
+        const changes = [];
+        for (let i = 0; i < NUM_LEDS; i++) {
+            const cur = matrixBoard[i];
+            if (cur.r > 0 || cur.g > 0 || cur.b > 0) {
+                const nr = Math.max(0, Math.floor(cur.r * 0.7));
+                const ng = Math.max(0, Math.floor(cur.g * 0.7));
+                const nb = Math.max(0, Math.floor(cur.b * 0.7));
+                matrixBoard[i] = {r: nr, g: ng, b: nb};
+                changes.push({index: i, r: nr, g: ng, b: nb});
+            }
+        }
+        let alive = 0;
+        for (const p of particles) {
+            p.x += p.vx; p.y += p.vy; p.life -= p.decay;
+            if (p.life <= 0) continue;
+            const col = Math.round(p.x), row = Math.round(p.y);
+            if (col < 0 || col >= 16 || row < 0 || row >= 16) continue;
+            alive++;
+            const idx = row * 16 + col;
+            const r = Math.round(p.r * p.life), g = Math.round(p.g * p.life), b = Math.round(p.b * p.life);
+            matrixBoard[idx] = {r, g, b};
+            changes.push({index: idx, r, g, b});
+        }
+        if (alive === 0) newBurst();
+        return changes;
+    }, 80);
+}
+
         function randomColor() {
             return {
                 r: Math.floor(Math.random() * 256),
@@ -1368,7 +1482,7 @@ function startPolice() {
 <div id="animate-popup" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.7); z-index:2000; align-items:center; justify-content:center;">
     <div style="background:var(--surface); border:1px solid var(--border); border-radius:12px; padding:24px; max-width:520px; width:95%;">
         <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
-            <div style="font-family:'Press Start 2P',monospace; font-size:8px; color:var(--amber); letter-spacing:1px;">✨ ANIMATE</div>
+            <div style="font-family:'Press Start 2P',monospace; font-size:8px; color:var(--amber); letter-spacing:1px;">✨ ANIMATIONS</div>
             <button onclick="document.getElementById('animate-popup').style.display='none'" style="font-family:'Press Start 2P',monospace; font-size:7px; padding:6px 10px; border-radius:6px; background:rgba(255,255,255,0.05); color:var(--muted); border:1px solid var(--border); cursor:pointer;">✕</button>
         </div>
         <div style="display:grid; grid-template-columns:repeat(2,1fr); gap:10px;">
@@ -1377,6 +1491,9 @@ function startPolice() {
             <button class="btn btn-anim" onclick="startTwinkle()">✨ TWINKLE</button>
             <button class="btn btn-anim" onclick="startFire()">🔥 FIRE</button>
             <button class="btn btn-anim" onclick="startPolice()">🚔 POLICE LIGHTS</button>
+            <button class="btn btn-anim" onclick="startGameOfLife()">🧬 GAME OF LIFE</button>
+            <button class="btn btn-anim" onclick="startRipple()">💧 RIPPLE</button>
+            <button class="btn btn-anim" onclick="startFireworks()">🎆 FIREWORKS</button>
         </div>
     </div>
 </div>
