@@ -143,6 +143,36 @@
             font-style: italic;
         }
 
+        .daily-prompt-bar {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            background: var(--surface);
+            border: 1px solid rgba(159,122,234,0.35);
+            border-radius: 10px;
+            padding: 10px 16px;
+            max-width: 480px;
+            width: 100%;
+            margin: 0 auto 20px;
+            animation: fadeUp 0.7s ease 0.2s both;
+            flex-wrap: wrap;
+        }
+
+        .daily-prompt-label {
+            font-family: 'Press Start 2P', monospace;
+            font-size: 7px;
+            color: #9f7aea;
+            white-space: nowrap;
+            letter-spacing: 0.5px;
+        }
+
+        .daily-prompt-text {
+            font-family: 'Nunito', sans-serif;
+            font-size: 14px;
+            font-weight: 700;
+            color: var(--text);
+        }
+
         .action-buttons {
             display: flex;
             gap: 10px;

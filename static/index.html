@@ -16,7 +16,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Nunito:wght@400;600;700&display=swap" rel="stylesheet">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/loaders/GLTFLoader.js"></script>
-    <link rel="stylesheet" href="/static/style.css?v=9">
+    <link rel="stylesheet" href="/static/style.css?v=10">
     <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
     <meta http-equiv="Pragma" content="no-cache">
     <meta http-equiv="Expires" content="0">
@@ -38,6 +38,11 @@
     <div class="sticky-note">
         <p>Hey! I've got a real LED board sitting in my house. Draw something on it for me to find when I get home. 👋</p>
         <!--<p class="signature">— Karl</p>-->
+    </div>
+
+    <div class="daily-prompt-bar">
+        <span class="daily-prompt-label">✏️ TODAY'S PROMPT</span>
+        <span id="daily-prompt-text" class="daily-prompt-text"></span>
     </div>
 
     <div class="content">
@@ -516,6 +521,75 @@ function getSeasonalTheme() {
         }
 
         applySeasonalTheme();
+
+        // =====================
+        // DAILY PROMPT
+        // =====================
+        (function() {
+            const prompts = [
+                // Animals
+                "a cat", "a dog", "a fish", "a bird", "a rabbit",
+                "a frog", "a turtle", "a snake", "a bear", "a fox",
+                "a penguin", "a flamingo", "a crab", "a butterfly", "a bee",
+                "a dragon", "a unicorn", "a dinosaur", "an octopus", "a shark",
+                "a whale", "a snail", "a duck", "a monkey", "a wolf",
+                "a lion", "an elephant", "a giraffe", "a bat", "a jellyfish",
+                "a lobster", "a parrot", "a hedgehog", "a koala",
+                // Food
+                "a pizza slice", "a hamburger", "a taco", "a birthday cake",
+                "a donut", "an ice cream cone", "a strawberry", "a pineapple",
+                "a watermelon slice", "a coffee cup", "a sushi roll", "a cookie",
+                "a lemon", "a mushroom", "a hot dog", "an apple", "a banana",
+                "a pretzel", "a cupcake", "a soda can", "a boba tea",
+                // Objects & tech
+                "a rocket ship", "a robot", "a spaceship", "a bicycle",
+                "a camera", "a guitar", "a diamond", "a key", "a lantern",
+                "a trophy", "an anchor", "a compass", "a book", "a lighthouse",
+                "a gamepad", "a floppy disk", "a magnifying glass", "a telescope",
+                "a hot air balloon", "a submarine", "a castle", "a crown",
+                "a treasure chest", "a sailboat",
+                // Nature & weather
+                "a sunset", "a rainbow", "a flower", "a tree", "a mountain",
+                "a snowflake", "a sun", "a crescent moon", "a storm cloud",
+                "a cactus", "a leaf", "a planet", "a shooting star",
+                "a volcano", "a wave",
+                // Characters
+                "a ghost", "an astronaut", "a pirate", "a knight", "a wizard",
+                "a ninja", "a superhero", "a monster", "a witch", "a vampire",
+                "a mermaid", "an alien",
+                // Vehicles
+                "a car", "a train", "a helicopter", "a bus",
+                // Architecture
+                "a house", "a skyscraper", "a barn", "a bridge",
+                "an igloo", "a windmill", "a ferris wheel", "a mushroom house",
+                // Fun & misc
+                "a pixel heart", "a skull", "a snowman", "a jack-o-lantern",
+                "a message in a bottle", "a portal", "a candle", "a lantern fish"
+            ];
+            function getSeasonalPrompt() {
+                const n = new Date(), m = n.getMonth() + 1, d = n.getDate();
+                if (m === 1 && d === 1)               return "a New Year's ball";
+                if (m === 2 && d === 14)              return "a Valentine's heart";
+                if (m === 3 && d === 17)              return "a shamrock";
+                if (m === 4 && d >= 1 && d <= 7)
+                    return ["an Easter egg", "a bunny", "a baby chick"][d % 3];
+                if (m === 7 && d === 4)               return "a fireworks display";
+                if (m === 10)
+                    return ["a jack-o-lantern", "a ghost", "a witch", "a bat", "a haunted house", "a skull", "a vampire", "a spider web"][d % 8];
+                if (m === 11 && d >= 22 && d <= 28)
+                    return ["a turkey", "a pumpkin pie", "a cornucopia"][d % 3];
+                if (m === 12 && d <= 25)
+                    return ["a Christmas tree", "Santa Claus", "a reindeer", "a snowman", "a candy cane", "a gift box", "a menorah", "a gingerbread man", "a stocking", "an ornament"][d % 10];
+                if ((m === 12 && d >= 26) || (m === 1 && d <= 7))
+                    return "a New Year's ball";
+                return null;
+            }
+            const now = new Date();
+            const dayOfYear = Math.floor((now - new Date(now.getFullYear(), 0, 0)) / 86400000);
+            const idx = (now.getFullYear() * 1000 + dayOfYear) % prompts.length;
+            const el = document.getElementById('daily-prompt-text');
+            if (el) el.textContent = 'Draw ' + (getSeasonalPrompt() || prompts[idx]) + '!';
+        })();
 
         function openOverlay() {
             const overlay = document.getElementById('draw-overlay');
