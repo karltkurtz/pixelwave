@@ -1,0 +1,12 @@
+PixelWave — To-Do List
+======================
+
+[ ] YouTube Live streaming
+[ ] Fill tool
+[ ] A "how to use" tooltip or mini guide for first-time visitors
+[ ] Allow visitors to vote/react to current drawing with emojis (👍 ❤️ 🔥)
+[ ] Add more pixel art templates (more Animals, more Expressions)
+[ ] Add sound effects — soft click when painting, chime when finishing
+[ ] Show live count of how many people are currently watching
+[ ] ANIMATE button — built but disabled pending polish
+      (animations: Matrix, Rainbow Wave, Twinkle, Fire, Police Lights)

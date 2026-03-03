@@ -51,7 +51,7 @@
 
         <div class="stream-container">
             <div class="stream-inner">
-                <div class="stream-label">LIVE</div>
+                <div class="stream-label">LIVE <span id="viewer-count" style="margin-left:auto; font-size:7px; color:var(--muted);"></span></div>
                 <img id="stream-img" alt="Live Stream"/>
                 <canvas id="threejs-canvas"></canvas>
             </div>
@@ -410,6 +410,14 @@
         }
 
         // =====================
+        // VIEWER COUNT
+        // =====================
+        function updateViewerCount(count) {
+            const el = document.getElementById('viewer-count');
+            if (el) el.textContent = count > 0 ? `👁 ${count} watching` : '';
+        }
+
+        // =====================
         // HOME BADGE
         // =====================
         function updateHomeBadge(isHome) {
@@ -609,9 +617,13 @@ function getSeasonalTheme() {
             ws.onmessage = (event) => {
                 const data = JSON.parse(event.data);
 
-                if (data.type === 'init') {
+                if (data.type === 'viewers') {
+                    updateViewerCount(data.count);
+                }
+                else if (data.type === 'init') {
                     renderBoard(data.board);
                     updateHomeBadge(data.home);
+                    if (data.viewers) updateViewerCount(data.viewers);
                     if (data.session.active) {
                         currentSessionLocation = data.location && data.location !== 'Unknown' ? ` in ${data.location}` : '';
                         setSessionActive(false);

@@ -544,8 +544,10 @@ async def websocket_endpoint(websocket: WebSocket):
         "location": session.get("location", ""),
         "home": home_status["home"],
         "last_session": session_history[-1] if session_history else None,
-        "shoutout": shoutout if shoutout["name"] else None
+        "shoutout": shoutout if shoutout["name"] else None,
+        "viewers": len(clients)
     })
+    await broadcast({"type": "viewers", "count": len(clients)})
 
     try:
         while True:
@@ -594,6 +596,7 @@ async def websocket_endpoint(websocket: WebSocket):
 
     except WebSocketDisconnect:
         clients.discard(websocket)
+        await broadcast({"type": "viewers", "count": len(clients)})
         if session["user_id"] == user_id:
             await end_session("disconnected")
 
