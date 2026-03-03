@@ -111,7 +111,7 @@
                         <input type="color" id="color-picker" value="#ff0000">
                     </div>
                     <button class="btn btn-surprise" onclick="document.getElementById('pixel-art-popup').style.display='flex'">🎨 PIXEL ART GENERATOR</button>
-                    <button class="btn btn-anim" id="anim-btn" onclick="animBtnClick()">ANIMATE</button>
+                    <button class="btn btn-anim" id="anim-btn" onclick="animBtnClick()">ANIMATIONS</button>
                     <button class="btn btn-clear" onclick="clearBoard()">CLEAR</button>
                     <div style="display:flex; align-items:center; gap:10px; width:100%;">
                         <span style="font-family:'Press Start 2P',monospace; font-size:6px; color:var(--muted); white-space:nowrap;">BRIGHTNESS</span>
@@ -885,7 +885,7 @@ let animController = null;
 let matrixBoard = null;
 
 function animBtnClick() {
-    showUnderConstruction('ANIMATE is being reworked and will be back soon!');
+    document.getElementById('animate-popup').style.display = 'flex';
 }
 
 function runAnim(tickFn, intervalMs) {
