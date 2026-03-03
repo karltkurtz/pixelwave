@@ -60,9 +60,9 @@ After every code change:
    ssh -i ~/.ssh/pixelwave_key karltkurtz@10.0.0.8 "sudo kill \$(sudo ss -tlnp | grep 8080 | grep -oP 'pid=\K[0-9]+') 2>/dev/null; sleep 1; nohup python3 ~/stream.py > ~/stream.log 2>&1 &"
    ```
    Note: `stream.py` lives at `~/stream.py` on the camera Pi (not inside `~/litebrite/`).
-2. **Wait 10 seconds**, then **open pigarage.com in a Safari Private Window** so Karl can review:
+2. **Wait 5 seconds**, then **open pigarage.com in a Safari Private Window** so Karl can review:
    ```
-   sleep 10 && osascript -e 'tell application "Safari"' -e 'activate' -e 'tell application "System Events" to keystroke "n" using {command down, shift down}' -e 'delay 1' -e 'tell front window to set current tab to (make new tab with properties {URL:"https://www.pigarage.com"})' -e 'end tell'
+   sleep 5 && osascript -e 'tell application "Safari"' -e 'activate' -e 'tell application "System Events" to keystroke "n" using {command down, shift down}' -e 'delay 0.5' -e 'set URL of current tab of front window to "https://www.pigarage.com"' -e 'end tell'
    ```
 3. **Do NOT commit** until Karl confirms it looks good.
 4. When Karl says **"commit"**, then run:
@@ -109,8 +109,8 @@ def snake_index(index: int) -> int:
 - Messages: `init`, `led_update`, `session_start`, `session_end`, `claim_window`, `finish`, `visitor_count`
 
 ### LED Brightness
-- Current default: slider `value=3` → sends level 3 to server → ~1.2% of hardware max (3/255)
-- Displayed as 3% in the UI (formula: `value / 102 * 100`, hardcoded label on load)
+- Current default: slider `value=1` → sends level 1 to server → ~0.4% of hardware max (1/255)
+- Displayed as 1% in the UI (formula: `value / 102 * 100`, hardcoded label on load)
 - Max allowed via slider: 102/255 (~40%) — PSU safety limit
 - User-facing slider shows 1–100% but maps to 1–102 internally
 
@@ -147,7 +147,7 @@ Located in `static/templates.js`. Categories:
 - **Button layout:** Donate and Past Artwork button positions swapped on main page.
 - **Open Graph / Twitter Card meta tags** added to index.html — image at `https://pigarage.com/static/og-image.png`.
 - **Pixel art templates added:** Animals tab: Cat, Frog, Dog. Expressions tab: Cool (sunglasses), Wow (O-mouth), Angry (V-brows + frown).
-- **Default brightness set to 3%** (slider `value=3`, label hardcoded `3%` on load).
+- **Default brightness set to 1%** (slider `value=1`, label hardcoded `1%` on load).
 - **About page updated:** Added Raspberry Pi 4 (camera) as a separate hardware entry; corrected matrix specs from 16x32/512 to 16x16/256.
 - **Camera admin controls:** MANUAL/AUTO mode switching with greyed-out inactive button (still clickable to switch back), sliders disabled in AUTO mode. AUTO does a full Picamera2 recreate (thread-safe via cam_lock + auto_reset_event) to guarantee clean AE reset.
 - **Camera Pi migration:** Moved camera from main Pi to dedicated Pi at `10.0.0.8:8080`. Fixed livestream by replacing per-request httpx proxy (overwhelmed single-threaded camera server) with background cache thread using `urllib.request`.
