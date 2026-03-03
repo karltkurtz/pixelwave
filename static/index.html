@@ -111,7 +111,6 @@
                         <input type="color" id="color-picker" value="#ff0000">
                     </div>
                     <button class="btn btn-surprise" onclick="document.getElementById('pixel-art-popup').style.display='flex'">🎨 PIXEL ART GENERATOR</button>
-                    <button class="btn btn-surprise" onclick="surpriseMe()">🎲 SURPRISE</button>
                     <button class="btn btn-anim" id="anim-btn" onclick="animBtnClick()">ANIMATE</button>
                     <button class="btn btn-clear" onclick="clearBoard()">CLEAR</button>
                     <div style="display:flex; align-items:center; gap:10px; width:100%;">
@@ -1133,68 +1132,6 @@ function startPolice() {
             document.getElementById('pixel-art-popup').style.display = 'none';
             template.forEach((val, i) => {
                 const color = val === 0 ? {r:0,g:0,b:0} : colorMap[val] || {r:255,g:255,b:255};
-                fetch(`/led/${i}`, {
-                    method: 'POST',
-                    headers: {'Content-Type': 'application/json'},
-                    body: JSON.stringify(color)
-                });
-            });
-        }
-
-        function surpriseMe() {
-            if (!iAmActive || animRunning) return;
-            const btn = Array.from(document.querySelectorAll('.btn-surprise')).find(b => b.textContent.includes('SURPRISE'));
-            const originalWidth = btn.offsetWidth;
-            btn.style.width = originalWidth + 'px';
-            btn.disabled = true;
-            btn.style.opacity = '0.4';
-            let count = 3;
-            btn.textContent = `🎲 ${count}`;
-            const cd = setInterval(() => {
-                count--;
-                if (count <= 0) {
-                    clearInterval(cd);
-                    btn.disabled = false;
-                    btn.style.opacity = '1';
-                    btn.textContent = '🎲 SURPRISE';
-                    btn.style.width = '';
-                } else {
-                    btn.textContent = `🎲 ${count}`;
-                }
-            }, 1000);
-            const pattern = Math.floor(Math.random() * 5);
-            const colors = [];
-
-            if (pattern === 0) {
-                for (let i = 0; i < NUM_LEDS; i++) colors.push(randomColor());
-            } else if (pattern === 1) {
-                const c1 = randomColor(), c2 = randomColor();
-                const stripeWidth = Math.ceil(NUM_LEDS / (2 + Math.floor(Math.random() * 4)));
-                for (let i = 0; i < NUM_LEDS; i++) colors.push(Math.floor(i / stripeWidth) % 2 === 0 ? c1 : c2);
-            } else if (pattern === 2) {
-                const c1 = randomColor(), c2 = randomColor();
-                for (let i = 0; i < NUM_LEDS; i++) {
-                    const t = i / (NUM_LEDS - 1);
-                    colors.push({
-                        r: Math.round(c1.r + (c2.r - c1.r) * t),
-                        g: Math.round(c1.g + (c2.g - c1.g) * t),
-                        b: Math.round(c1.b + (c2.b - c1.b) * t)
-                    });
-                }
-            } else if (pattern === 3) {
-                const c1 = randomColor(), c2 = randomColor();
-                for (let i = 0; i < NUM_LEDS; i++) colors.push(i % 2 === 0 ? c1 : c2);
-            } else {
-                const c1 = randomColor(), c2 = randomColor(), c3 = randomColor();
-                const third = Math.floor(NUM_LEDS / 3);
-                for (let i = 0; i < NUM_LEDS; i++) {
-                    if (i < third) colors.push(c1);
-                    else if (i < third * 2) colors.push(c2);
-                    else colors.push(c3);
-                }
-            }
-
-            colors.forEach((color, i) => {
                 fetch(`/led/${i}`, {
                     method: 'POST',
                     headers: {'Content-Type': 'application/json'},
