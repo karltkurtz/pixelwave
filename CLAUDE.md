@@ -116,7 +116,7 @@ def snake_index(index: int) -> int:
 
 ### CSS Cache Busting
 CSS and JS files use version query params:
-- `style.css?v=9`
+- `style.css?v=11`
 - `templates.js?v=7`
 Bump these when making CSS/JS changes to force browser refresh.
 
@@ -135,28 +135,40 @@ Located in `static/templates.js`. Categories:
 - Allow visitors to vote/react to current drawing with emojis (👍❤️🔥)
 - Add more pixel art templates (more Animals, more Expressions)
 - Add sound effects — soft click when painting, chime when finishing
-- Show live count of how many people are currently watching
-- ANIMATE button (animations: Matrix, Rainbow Wave, Twinkle, Fire, Police Lights) — built but disabled pending polish
 
 ## Known Issues
 - Cloudflare Tunnel drops persistent MJPEG streams after ~30s — using snapshot polling instead
 
 ## Recently Completed
-- **Site polish pass:** CLICK TO DRAW and DONE buttons animate with cycling color + glow (`claimColor` 10s keyframe: amber→teal→coral→green→purple). ANIMATE button recolored amber to match SURPRISE. 3D VIEW button removed from draw overlay (feature dropped). Under construction banner removed.
-- **Draw overlay UX:** "Artboard is free — Use it!" status text hidden (unnecessary). BOARD IN USE button hidden (`display:none`) instead of disabled/greyed — restores on `setSessionIdle`.
+- **Animations overhaul:** ANIMATE button renamed to ANIMATIONS and enabled. SURPRISE button removed. 13 total animations available via popup: The Matrix, Rainbow Wave, Twinkle, Fire, Police Lights, Game of Life, Ripple, Fireworks, Meteor Shower, Bubbles, Kaleidoscope, Clock, Pac-Man.
+- **ANIMATIONS button sparkle effect:** 4 ✦/✧ sparkle characters twinkle around the button corners with staggered CSS keyframe timings. Pulsing amber glow (`animGlow` keyframe). Implemented via `.anim-sparkle-wrap` wrapper div (`::before`/`::after`) and `#anim-btn::before`/`::after`. Button sits in a `<div class="anim-sparkle-wrap">` inside the flex controls row.
+- **Admin live stream preview:** `<img id="admin-stream">` added below camera controls card in `admin.html`. Polls `/snapshot?t=Date.now()` every 150ms (same pattern as main page). Lets Karl see camera setting changes take effect in real time.
+- **Default brightness set to 1%** (slider `value=1`, label hardcoded `1%` on load).
+- **Seasonal background animations:** Date-gated starfield themes — Christmas (falling pixelated snowflakes), Halloween (rising pixelated pumpkins with stem/eyes/mouth), Valentine's (pink rising pixels), default (colorful rising pixels). Bitmaps: `SNOWFLAKE` 5×5, `PUMPKIN` 6×5. Override line removed — production uses live date.
+- **Site polish pass:** CLICK TO DRAW and DONE buttons animate with cycling color + glow (`claimColor` 10s keyframe: amber→teal→coral→green→purple). 3D VIEW button removed. Under construction banner removed.
+- **Draw overlay UX:** "Artboard is free — Use it!" status text hidden. BOARD IN USE button hidden (`display:none`) instead of disabled/greyed.
 - **Button layout:** Donate and Past Artwork button positions swapped on main page.
 - **Open Graph / Twitter Card meta tags** added to index.html — image at `https://pigarage.com/static/og-image.png`.
 - **Pixel art templates added:** Animals tab: Cat, Frog, Dog. Expressions tab: Cool (sunglasses), Wow (O-mouth), Angry (V-brows + frown).
-- **Default brightness set to 1%** (slider `value=1`, label hardcoded `1%` on load).
 - **About page updated:** Added Raspberry Pi 4 (camera) as a separate hardware entry; corrected matrix specs from 16x32/512 to 16x16/256.
-- **Camera admin controls:** MANUAL/AUTO mode switching with greyed-out inactive button (still clickable to switch back), sliders disabled in AUTO mode. AUTO does a full Picamera2 recreate (thread-safe via cam_lock + auto_reset_event) to guarantee clean AE reset.
-- **Camera Pi migration:** Moved camera from main Pi to dedicated Pi at `10.0.0.8:8080`. Fixed livestream by replacing per-request httpx proxy (overwhelmed single-threaded camera server) with background cache thread using `urllib.request`.
-- **LED orientation fix:** Physical matrix is mounted 90° CCW — fixed `snake_index()` to pre-rotate coordinates 90° CW before applying snake wiring. Affects all LED operations.
-- Admin page: added ← BACK TO LIVE STREAM nav link, password-protected CLEAR ARTWORK and CLEAR GUESTBOOK buttons
-- `POST /leds/batch` endpoint: sets multiple LEDs in one `strip.show()` call (used by animations)
-- Visitor footer redesigned: two lines — total visits + "Most recent visit from [location]"
-- DONE popup: replaced CANCEL with NOT DONE button
-- Mobile fix: set finish name input font-size to 16px to prevent iOS Safari auto-zoom
+- **Camera admin controls:** MANUAL/AUTO mode switching with greyed-out inactive button, sliders disabled in AUTO mode. AUTO does a full Picamera2 recreate for guaranteed clean AE reset.
+- **Camera Pi migration:** Moved camera from main Pi to dedicated Pi at `10.0.0.8:8080`. Background cache thread using `urllib.request`.
+- **LED orientation fix:** Physical matrix is mounted 90° CCW — fixed `snake_index()` to pre-rotate coordinates 90° CW.
+- Admin page: ← BACK TO LIVE STREAM nav link, password-protected CLEAR ARTWORK and CLEAR GUESTBOOK buttons.
+- `POST /leds/batch` endpoint: sets multiple LEDs in one `strip.show()` call (used by animations).
+- Visitor footer redesigned: two lines — total visits + "Most recent visit from [location]".
+- DONE popup: replaced CANCEL with NOT DONE button.
+- Mobile fix: set finish name input font-size to 16px to prevent iOS Safari auto-zoom.
+
+## Animation System Notes
+- All animations use `runAnim(tickFn, intervalMs)` — sets `animRunning=true`, starts interval, sends batch LED updates via `POST /leds/batch`
+- `stopAnim()` clears interval, sets `animRunning=false`, re-enables color picker
+- CLEAR button stops any running animation (`clearBoard()` calls `stopAnim()` if `animRunning`)
+- Starting a new animation via `runAnim` automatically cancels the previous one
+- **Clock animation** checks every 500ms but only sends updates when time/colon state actually changes (key caching). Layout: digits at cols [0,3,9,12], colon at col 7, start row 6. Hours = amber, minutes = teal.
+- **Pac-Man** runs on the 60-cell perimeter path (clockwise). Pac-Man moves every tick, ghost every 3rd tick. Ghost turns blue when within 5 positions ahead of Pac-Man; teleports to +30 when caught.
+- **Bubbles** tracks `prevPixels` per bubble to clear exactly the old circle outline each tick (no full-board fade). Phase 1: clear all prevPixels. Phase 2: move + draw.
+- **Meteor Shower** uses per-frame fade (multiply by 0.6) to create trailing effect. Meteors move diagonally top-right→bottom-left (dx=-1, dy=+1).
 
 ## Instagram
 - Handle: `@Pi_Garage`

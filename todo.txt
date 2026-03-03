@@ -7,10 +7,12 @@ PixelWave — To-Do List
 [ ] Allow visitors to vote/react to current drawing with emojis (👍 ❤️ 🔥)
 [ ] Add more pixel art templates (more Animals, more Expressions)
 [ ] Add sound effects — soft click when painting, chime when finishing
-[ ] ANIMATE button — built but disabled pending polish
-      (animations: Matrix, Rainbow Wave, Twinkle, Fire, Police Lights)
 
 [x] Show live count of how many people are currently watching
 [x] Seasonal background animations — date-gated by holiday
       (Christmas: falling pixelated snowflakes, Halloween: rising pumpkins,
        Valentine's: pink pixels — more holidays easy to add)
+[x] ANIMATE button — enabled, renamed to ANIMATIONS
+      (13 animations: Matrix, Rainbow Wave, Twinkle, Fire, Police Lights,
+       Game of Life, Ripple, Fireworks, Meteor Shower, Bubbles,
+       Kaleidoscope, Clock, Pac-Man)
