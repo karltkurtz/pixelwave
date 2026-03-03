@@ -1184,6 +1184,198 @@ function startFireworks() {
     }, 80);
 }
 
+function startMeteorShower() {
+    document.getElementById('animate-popup').style.display = 'none';
+    const palette = [{r:255,g:255,b:255},{r:180,g:220,b:255},{r:255,g:200,b:130},{r:200,g:180,b:255}];
+    function newMeteor(staggerY) {
+        const c = palette[Math.floor(Math.random() * palette.length)];
+        const tailLen = 4 + Math.floor(Math.random() * 4);
+        return {
+            x: Math.floor(Math.random() * 16),
+            y: staggerY !== undefined ? staggerY : -Math.floor(Math.random() * 6),
+            r: c.r, g: c.g, b: c.b,
+            tailLen, speed: 1 + Math.floor(Math.random() * 2), tick: 0
+        };
+    }
+    const meteors = Array.from({length: 6}, (_, i) => newMeteor(-i * 4));
+    runAnim(() => {
+        const changes = [];
+        for (let i = 0; i < NUM_LEDS; i++) {
+            const cur = matrixBoard[i];
+            if (cur.r > 0 || cur.g > 0 || cur.b > 0) {
+                const nr = Math.max(0, Math.floor(cur.r * 0.6));
+                const ng = Math.max(0, Math.floor(cur.g * 0.6));
+                const nb = Math.max(0, Math.floor(cur.b * 0.6));
+                matrixBoard[i] = {r: nr, g: ng, b: nb};
+                changes.push({index: i, r: nr, g: ng, b: nb});
+            }
+        }
+        for (const m of meteors) {
+            m.tick++;
+            if (m.tick < m.speed) continue;
+            m.tick = 0;
+            m.x--; m.y++;
+            for (let t = 0; t < m.tailLen; t++) {
+                const tx = m.x + t, ty = m.y - t;
+                if (tx < 0 || tx >= 16 || ty < 0 || ty >= 16) continue;
+                const fade = 1 - t / m.tailLen;
+                const r = Math.round(m.r * fade), g = Math.round(m.g * fade), b = Math.round(m.b * fade);
+                const idx = ty * 16 + tx;
+                matrixBoard[idx] = {r, g, b};
+                changes.push({index: idx, r, g, b});
+            }
+            if (m.x < -m.tailLen || m.y > 15 + m.tailLen) Object.assign(m, newMeteor());
+        }
+        return changes;
+    }, 80);
+}
+
+function startBubbles() {
+    document.getElementById('animate-popup').style.display = 'none';
+    function circlePixels(cx, cy, radius) {
+        const out = [];
+        for (let row = Math.max(0, Math.floor(cy - radius - 1)); row <= Math.min(15, Math.ceil(cy + radius + 1)); row++)
+            for (let col = Math.max(0, Math.floor(cx - radius - 1)); col <= Math.min(15, Math.ceil(cx + radius + 1)); col++) {
+                const d = Math.sqrt((col - cx) ** 2 + (row - cy) ** 2);
+                if (d >= radius - 0.6 && d <= radius + 0.6) out.push(row * 16 + col);
+            }
+        return out;
+    }
+    function newBubble(startY) {
+        const {r, g, b} = hslToRgb(Math.random() * 360);
+        return {x: 2 + Math.random() * 12, y: startY !== undefined ? startY : 17 + Math.random() * 6,
+            r, g, b, radius: 1 + Math.random() * 1.5, speed: 0.08 + Math.random() * 0.1, prevPixels: []};
+    }
+    const bubbles = Array.from({length: 6}, (_, i) => newBubble(14 - i * 3));
+    runAnim(() => {
+        const changes = [];
+        for (const b of bubbles) {
+            for (const idx of b.prevPixels) { matrixBoard[idx] = {r:0,g:0,b:0}; changes.push({index: idx, r:0, g:0, b:0}); }
+            b.prevPixels = [];
+        }
+        for (const b of bubbles) {
+            b.y -= b.speed;
+            if (b.y + b.radius < 0) { Object.assign(b, newBubble()); continue; }
+            const pixels = circlePixels(b.x, b.y, b.radius);
+            b.prevPixels = pixels;
+            for (const idx of pixels) { matrixBoard[idx] = {r: b.r, g: b.g, b: b.b}; changes.push({index: idx, r: b.r, g: b.g, b: b.b}); }
+        }
+        return changes;
+    }, 80);
+}
+
+function startKaleidoscope() {
+    document.getElementById('animate-popup').style.display = 'none';
+    let t = 0;
+    runAnim(() => {
+        t += 0.06;
+        const changes = [];
+        for (let row = 0; row < 8; row++) {
+            for (let col = 0; col < 8; col++) {
+                const hue = (Math.sin(row * 0.9 + t) * 120 + Math.cos(col * 0.7 + t * 1.3) * 120 + t * 40 + 360) % 360;
+                const {r, g, b} = hslToRgb(hue);
+                for (const [pr, pc] of [[row,col],[row,15-col],[15-row,col],[15-row,15-col]]) {
+                    const idx = pr * 16 + pc;
+                    const cur = matrixBoard[idx];
+                    if (cur.r !== r || cur.g !== g || cur.b !== b) { matrixBoard[idx] = {r,g,b}; changes.push({index:idx,r,g,b}); }
+                }
+            }
+        }
+        return changes;
+    }, 80);
+}
+
+function startClock() {
+    document.getElementById('animate-popup').style.display = 'none';
+    const DIGITS = [
+        [1,1,1, 1,0,1, 1,0,1, 1,0,1, 1,1,1], // 0
+        [0,1,0, 1,1,0, 0,1,0, 0,1,0, 1,1,1], // 1
+        [1,1,1, 0,0,1, 1,1,1, 1,0,0, 1,1,1], // 2
+        [1,1,1, 0,0,1, 1,1,1, 0,0,1, 1,1,1], // 3
+        [1,0,1, 1,0,1, 1,1,1, 0,0,1, 0,0,1], // 4
+        [1,1,1, 1,0,0, 1,1,1, 0,0,1, 1,1,1], // 5
+        [1,1,1, 1,0,0, 1,1,1, 1,0,1, 1,1,1], // 6
+        [1,1,1, 0,0,1, 0,0,1, 0,1,0, 0,1,0], // 7
+        [1,1,1, 1,0,1, 1,1,1, 1,0,1, 1,1,1], // 8
+        [1,1,1, 1,0,1, 1,1,1, 0,0,1, 1,1,1], // 9
+    ];
+    // Layout (16 cols): d0[0-2] d1[3-5] _[6] :[7] _[8] d2[9-11] d3[12-14] unused[15]
+    const digitCols = [0, 3, 9, 12];
+    const colonCol = 7;
+    const startRow = 6;
+    let lastKey = '';
+    runAnim(() => {
+        const now = new Date();
+        const hStr = now.getHours().toString().padStart(2, '0');
+        const mStr = now.getMinutes().toString().padStart(2, '0');
+        const showColon = now.getSeconds() % 2 === 0;
+        const key = hStr + mStr + showColon;
+        if (key === lastKey) return [];
+        lastKey = key;
+        const changes = [];
+        for (let i = 0; i < NUM_LEDS; i++) {
+            if (matrixBoard[i].r || matrixBoard[i].g || matrixBoard[i].b) {
+                matrixBoard[i] = {r:0,g:0,b:0}; changes.push({index:i,r:0,g:0,b:0});
+            }
+        }
+        const hourCol = {r:246,g:173,b:85}, minCol = {r:79,g:209,b:197};
+        [hStr[0], hStr[1], mStr[0], mStr[1]].forEach((ch, di) => {
+            const bm = DIGITS[parseInt(ch)], sc = digitCols[di];
+            const {r,g,b} = di < 2 ? hourCol : minCol;
+            for (let row = 0; row < 5; row++)
+                for (let col = 0; col < 3; col++)
+                    if (bm[row*3+col]) { const idx=(startRow+row)*16+sc+col; matrixBoard[idx]={r,g,b}; changes.push({index:idx,r,g,b}); }
+        });
+        if (showColon) {
+            for (const row of [startRow+1, startRow+3]) {
+                const idx = row * 16 + colonCol;
+                matrixBoard[idx] = {r:255,g:255,b:255}; changes.push({index:idx,r:255,g:255,b:255});
+            }
+        }
+        return changes;
+    }, 500);
+}
+
+function startPacMan() {
+    document.getElementById('animate-popup').style.display = 'none';
+    const path = [];
+    for (let col = 0; col < 16; col++) path.push([0, col]);
+    for (let row = 1; row < 16; row++) path.push([row, 15]);
+    for (let col = 14; col >= 0; col--) path.push([15, col]);
+    for (let row = 14; row > 0; row--) path.push([row, 0]);
+    const N = path.length; // 60
+    let pacPos = 0, ghostPos = 45, tick = 0, frightenTicks = 0, mouthOpen = true;
+    const dots = new Set();
+    for (let i = 0; i < N; i++) if (i % 2 === 1) dots.add(i);
+    runAnim(() => {
+        tick++;
+        pacPos = (pacPos + 1) % N;
+        dots.delete(pacPos);
+        if (tick % 3 === 0) { ghostPos = (ghostPos + 1) % N; mouthOpen = !mouthOpen; }
+        if (dots.size < 5) { for (let i = 0; i < N; i++) if (i % 2 === 1) dots.add(i); }
+        const dist = ((ghostPos - pacPos) + N) % N;
+        if (dist <= 5) frightenTicks = 20;
+        if (frightenTicks > 0) frightenTicks--;
+        if (dist <= 1) { ghostPos = (pacPos + 30) % N; frightenTicks = 0; }
+        const changes = [];
+        for (let i = 0; i < NUM_LEDS; i++) {
+            const cur = matrixBoard[i];
+            if (cur.r || cur.g || cur.b) { matrixBoard[i]={r:0,g:0,b:0}; changes.push({index:i,r:0,g:0,b:0}); }
+        }
+        for (const i of dots) {
+            const [r,c] = path[i]; const idx = r*16+c;
+            matrixBoard[idx]={r:90,g:90,b:90}; changes.push({index:idx,r:90,g:90,b:90});
+        }
+        const [pr,pc] = path[pacPos]; const pidx = pr*16+pc;
+        const pac = mouthOpen ? {r:255,g:220,b:0} : {r:200,g:160,b:0};
+        matrixBoard[pidx]=pac; changes.push({index:pidx,...pac});
+        const [gr,gc] = path[ghostPos]; const gidx = gr*16+gc;
+        const ghost = frightenTicks > 0 ? {r:30,g:30,b:220} : {r:255,g:30,b:180};
+        matrixBoard[gidx]=ghost; changes.push({index:gidx,...ghost});
+        return changes;
+    }, 150);
+}
+
         function randomColor() {
             return {
                 r: Math.floor(Math.random() * 256),
@@ -1494,6 +1686,11 @@ function startFireworks() {
             <button class="btn btn-anim" onclick="startGameOfLife()">🧬 GAME OF LIFE</button>
             <button class="btn btn-anim" onclick="startRipple()">💧 RIPPLE</button>
             <button class="btn btn-anim" onclick="startFireworks()">🎆 FIREWORKS</button>
+            <button class="btn btn-anim" onclick="startMeteorShower()">🌠 METEOR SHOWER</button>
+            <button class="btn btn-anim" onclick="startBubbles()">🫧 BUBBLES</button>
+            <button class="btn btn-anim" onclick="startKaleidoscope()">🔮 KALEIDOSCOPE</button>
+            <button class="btn btn-anim" onclick="startClock()">🕐 CLOCK</button>
+            <button class="btn btn-anim" onclick="startPacMan()">👾 PAC-MAN</button>
         </div>
     </div>
 </div>
