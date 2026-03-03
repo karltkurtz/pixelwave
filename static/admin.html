@@ -133,6 +133,7 @@
         <button id="btn-manual" class="admin-btn btn-apply" onclick="applyCamera()">MANUAL</button>
         <button id="btn-auto-cam" class="admin-btn btn-auto" onclick="setAutoCamera()">AUTO</button>
         <div class="status-msg" id="camera-status"></div>
+        <img id="admin-stream" src="/snapshot" style="width:100%; border-radius:8px; margin-top:16px; display:block; image-rendering:pixelated;">
     </div>
 
     <div class="admin-card">
@@ -246,6 +247,15 @@
         });
         showStatus('clear-status', res.ok ? 'GUESTBOOK CLEARED ✓' : 'ERROR', res.ok);
     }
+
+    // Live stream polling
+    const adminStream = document.getElementById('admin-stream');
+    function pollSnapshot() {
+        const img = new Image();
+        img.onload = () => { adminStream.src = img.src; };
+        img.src = '/snapshot?t=' + Date.now();
+    }
+    setInterval(pollSnapshot, 150);
 </script>
 </body>
 </html>
